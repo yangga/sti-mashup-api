@@ -4,29 +4,30 @@ export class CreateUsersTable1622299665807 implements MigrationInterface {
   name = 'createUsersTable1622299665807';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      "CREATE TYPE \"users_role_enum\" AS ENUM('USER', 'ADMIN')",
-    );
     await queryRunner.query(`
-      CREATE TABLE "users"
-      (
-        "id"         uuid              NOT NULL DEFAULT uuid_generate_v4(),
-        "created_at" TIMESTAMP         NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP         NOT NULL DEFAULT now(),
-        "first_name" character varying,
-        "last_name"  character varying,
-        "role"       "users_role_enum" NOT NULL DEFAULT 'USER',
-        "email"      character varying,
-        "password"   character varying,
-        "phone"      character varying,
-        "avatar"     character varying,
-        CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"),
-        CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id")
-      )`);
+    create table users
+    (
+        id bigint auto_increment,
+        created_at datetime default CURRENT_TIMESTAMP not null,
+        updated_at datetime default current_timestamp not null,
+        first_name varchar(128) not null,
+        last_name varchar(128) not null,
+        role enum('USER', 'ADMIN') default 'USER' not null,
+        email varchar(256) not null,
+        password varchar(1024) not null,
+        phone varchar(80) null,
+        avatar varchar(1024) null,
+        constraint users_pk
+            primary key (id)
+    )`);
+
+    await queryRunner.query(`
+    create unique index users_email_uindex
+	on users (email)`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('DROP TABLE "users"');
-    await queryRunner.query('DROP TYPE "users_role_enum"');
+    await queryRunner.query('DROP TABLE `users`');
+    await queryRunner.query('DROP INDEX `users_email_uindex`');
   }
 }

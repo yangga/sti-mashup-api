@@ -6,6 +6,8 @@ import { isNil } from 'lodash';
 import { UserSubscriber } from '../../entity-subscribers/user-subscriber';
 import { SnakeNamingStrategy } from '../../snake-naming.strategy';
 
+const isLocal = process.env.NODE_ENV === 'local';
+
 @Injectable()
 export class ApiConfigService {
   constructor(private configService: ConfigService) {}
@@ -98,7 +100,8 @@ export class ApiConfigService {
       password: this.getString('DB_PASSWORD'),
       database: this.getString('DB_DATABASE'),
       subscribers: [UserSubscriber],
-      migrationsRun: true,
+      migrationsRun: !isLocal,
+      synchronize: isLocal,
       logging: this.getBoolean('ENABLE_ORM_LOGS'),
       namingStrategy: new SnakeNamingStrategy(),
     };

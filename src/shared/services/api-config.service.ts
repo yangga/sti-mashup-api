@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -7,6 +8,8 @@ import { UserSubscriber } from '../../entity-subscribers/user-subscriber';
 import { SnakeNamingStrategy } from '../../snake-naming.strategy';
 
 const isLocal = process.env.NODE_ENV === 'local';
+
+const AWS_ACCOUNT_ID = '860105409312';
 
 @Injectable()
 export class ApiConfigService {
@@ -22,6 +25,26 @@ export class ApiConfigService {
 
   get isTest(): boolean {
     return this.nodeEnv === 'test';
+  }
+
+  get webPageUrl(): string {
+    if (this.stage === 'prod') {
+      return 'https://sideteam.io';
+    }
+
+    return `https://${this.stage}.sideteam.io`;
+  }
+
+  get emailAddrNoreply(): string {
+    return 'noreply@sideteam.io';
+  }
+
+  get emailSqsUrl(): string {
+    return `https://sqs.${this.awsConfig.region}.amazonaws.com/${this.awsConfig.accountId}/STIEmailQueue-${this.stage}.fifo`;
+  }
+
+  get emailVerificationTimeoutMin(): number {
+    return 30;
   }
 
   private getNumber(key: string): number {
@@ -52,6 +75,10 @@ export class ApiConfigService {
 
   get nodeEnv(): string {
     return this.getString('NODE_ENV');
+  }
+
+  get stage(): string {
+    return this.getString('STAGE');
   }
 
   get fallbackLanguage(): string {
@@ -107,11 +134,15 @@ export class ApiConfigService {
     };
   }
 
-  get awsS3Config() {
+  get awsConfig() {
     return {
-      bucketRegion: this.getString('AWS_S3_BUCKET_REGION'),
-      bucketApiVersion: this.getString('AWS_S3_API_VERSION'),
-      bucketName: this.getString('AWS_S3_BUCKET_NAME'),
+      region: this.getString('AWS_REGION'),
+      accountId: AWS_ACCOUNT_ID,
+      s3: {
+        bucketRegion: this.getString('AWS_S3_BUCKET_REGION'),
+        bucketApiVersion: this.getString('AWS_S3_API_VERSION'),
+        bucketName: this.getString('AWS_S3_BUCKET_NAME'),
+      },
     };
   }
 

@@ -79,3 +79,5 @@ db-data
 # Vuepress
 .temp
 .cache
+
+.serverless/

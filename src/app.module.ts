@@ -4,7 +4,10 @@ import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SharedIniFileCredentials, SQS } from 'aws-sdk';
+import { AwsSdkModule } from 'nest-aws-sdk';
 import { I18nJsonParser, I18nModule } from 'nestjs-i18n';
+import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
 
 import { contextMiddleware } from './middlewares';
@@ -42,7 +45,28 @@ import { SharedModule } from './shared/shared.module';
       parser: I18nJsonParser,
       inject: [ApiConfigService],
     }),
+    AwsSdkModule.forRoot({
+      defaultServiceOptions: {
+        region: 'ap-northeast-2',
+        credentials:
+          process.env.NODE_ENV === 'local'
+            ? new SharedIniFileCredentials({
+                profile: 'sideteam-serverless-local',
+              })
+            : undefined,
+      },
+      services: [SQS],
+    }),
     HealthCheckerModule,
+    LoggerModule.forRoot({
+      pinoHttp: [
+        {
+          level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+          prettyPrint: process.env.NODE_ENV !== 'production',
+          useLevelLabels: true,
+        },
+      ],
+    }),
   ],
 })
 export class AppModule implements NestModule {

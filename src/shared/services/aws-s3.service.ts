@@ -14,7 +14,7 @@ export class AwsS3Service {
     public configService: ApiConfigService,
     public generatorService: GeneratorService,
   ) {
-    const awsS3Config = configService.awsS3Config;
+    const awsS3Config = configService.awsConfig.s3;
 
     const options: AWS.S3.Types.ClientConfiguration = {
       apiVersion: awsS3Config.bucketApiVersion,
@@ -31,7 +31,7 @@ export class AwsS3Service {
     const key = 'images/' + fileName;
     await this.s3
       .putObject({
-        Bucket: this.configService.awsS3Config.bucketName,
+        Bucket: this.configService.awsConfig.s3.bucketName,
         Body: file.buffer,
         ACL: 'public-read',
         Key: key,

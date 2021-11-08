@@ -1,0 +1,86 @@
+service: sti-mashup-api
+
+package:
+  patterns:
+    - 'artifact/**/*'
+
+useDotenv: true
+
+plugins:
+  - serverless-plugin-log-retention
+  - serverless-plugin-optimize
+  - serverless-offline
+
+custom:
+  logRetentionInDays: 7
+
+  tscpaths:
+    buildPath: .build
+
+provider:
+  name: aws
+  region: ap-northeast-2
+  profile: sideteam-serverless-local
+  runtime: nodejs14.x
+  memorySize: 256
+  lambdaHashingVersion: 20201221
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:DeleteItem
+            - dynamodb:BatchGetItem
+            - dynamodb:BatchWriteItem
+          Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/*'
+        # IAMCredentials - https://gist.github.com/dhavaln/27a688f99169166398795c6b9adaa427
+        - Effect: Allow
+          Action:
+            - sqs:GetQueueAttributes
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+          Resource: 'arn:aws:sqs:${self:provider.region}:*:*'
+
+# CloudFormation - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
+resources:
+  Resources:
+    ######################################################################################
+    # Dynamo DB
+    ######################################################################################
+    STITokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: STIToken.${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: code
+            AttributeType: S
+          - AttributeName: action
+            AttributeType: S
+          - AttributeName: source
+            AttributeType: S          
+        KeySchema:
+          - AttributeName: code
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: ActionIndex
+            KeySchema:
+              - AttributeName: action
+                KeyType: HASH
+              - AttributeName: source
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        TimeToLiveSpecification: 
+          AttributeName: ttl
+          Enabled: true
+        Tags:
+          - Key: PROJECT
+            Value: sti
+          - Key: STAGE
+            Value: ${sls:stage}

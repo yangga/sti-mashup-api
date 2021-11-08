@@ -9,14 +9,20 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/src/main.ts",
-      "preLaunchTask": "npm: build:prod",
+      "preLaunchTask": "npm: build:dev",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "skipFiles": [
         "${workspaceFolder}/node_modules/**/*.js",
         "<node_internals>/**/*.js"
       ],
       "port": 7777,
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "AWS_ACCESS_KEY_ID": "AKIA4QQSHAMQGIL5EQNG",
+        "AWS_SECRET_ACCESS_KEY": "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",
+        "AWS_REGION": "ap-northeast-2",
+        "STAGE": "dev"
+      }
     }
   ]
 }

@@ -11,7 +11,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import compression from 'compression';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import { Logger } from 'nestjs-pino';
 import {
   initializeTransactionalContext,
   patchTypeORMRepositoryWithBaseRepository,
@@ -20,6 +20,7 @@ import {
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/bad-request.filter';
 import { QueryFailedFilter } from './filters/query-failed.filter';
+import { ErrorsInterceptor } from './interceptors/errors.interceptor';
 import { setupSwagger } from './setup-swagger';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
@@ -30,8 +31,9 @@ export async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(),
-    { cors: true },
+    { cors: true, bufferLogs: true },
   );
+  app.useLogger(app.get(Logger));
   app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
   app.use(helmet());
   app.use(
@@ -41,7 +43,6 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     }),
   );
   app.use(compression());
-  app.use(morgan('combined'));
   app.enableVersioning();
 
   const reflector = app.get(Reflector);
@@ -51,7 +52,10 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     new QueryFailedFilter(reflector),
   );
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(reflector),
+    new ErrorsInterceptor(),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

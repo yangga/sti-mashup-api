@@ -1,6 +1,15 @@
 import type { Type } from '@nestjs/common';
 import { applyDecorators, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiDefaultResponse,
+  ApiOkResponse,
+  ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
+
+import {
+  ErrorResponseDto,
+  ValidationErrorResponseDto,
+} from '../common/dto/error-response.dto';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/explicit-module-boundary-types
 export const ResponseData = <TModel extends Type<unknown>>(model?: TModel) =>
@@ -8,5 +17,11 @@ export const ResponseData = <TModel extends Type<unknown>>(model?: TModel) =>
     HttpCode(HttpStatus.OK),
     ApiOkResponse({
       type: model,
+    }),
+    ApiUnprocessableEntityResponse({
+      type: ValidationErrorResponseDto,
+    }),
+    ApiDefaultResponse({
+      type: ErrorResponseDto,
     }),
   );

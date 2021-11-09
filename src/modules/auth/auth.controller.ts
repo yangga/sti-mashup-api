@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   UploadedFile,
   UseGuards,
@@ -34,7 +33,10 @@ import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/LoginPayloadDto';
 import { UserLoginDto } from './dto/UserLoginDto';
 import { UserRegisterDto } from './dto/UserRegisterDto';
-import { UserSignupDto } from './dto/UserSignupDto';
+import {
+  VerifyEmailConfirmDto,
+  VerifyEmailReqDto,
+} from './dto/VerificationDto';
 
 @CommonHeader()
 @Controller('auth')
@@ -45,32 +47,37 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('verify-email')
+  @Version('1')
+  @Post('verify/email')
   @ApiOperation({
     summary: '',
-    description: '{vendorId}에 해당하는 업장정보로 제한 됨',
+    description: '인증 메일 요청',
   })
   @ResponseData()
   async reqEmailVerification(
     @RequestHeader(CommonHeaderDto) header: CommonHeaderDto,
-    @Body() userSignupDto: UserSignupDto,
+    @Body() body: VerifyEmailReqDto,
   ): Promise<void> {
     await this.authService.emailVerification(
       'signup',
-      userSignupDto.email,
+      body.email,
       header.locale,
     );
   }
 
-  @Post('verify-email/confirm')
+  @Version('1')
+  @Post('verify/email/confirm')
   @ResponseData()
-  async confirmEmailVerification(@Param('code') code: string): Promise<void> {
+  async confirmEmailVerification(
+    @Body() body: VerifyEmailConfirmDto,
+  ): Promise<void> {
     await this.authService.extendEmailVerification({
-      code,
+      code: body.code,
       ttl: Math.floor(Date.now() * 0.001 + 30 * 1000),
     });
   }
 
+  @Version('1')
   @Post('register')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserDto, description: 'Successfully Registered' })
@@ -89,6 +96,7 @@ export class AuthController {
     });
   }
 
+  @Version('1')
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -111,7 +119,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @UseInterceptors(AuthUserInterceptor)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: UserDto, description: 'current user info' })
+  @ResponseData(UserDto)
   getCurrentUser(@AuthUser() user: UserEntity): UserDto {
     return user.toDto();
   }

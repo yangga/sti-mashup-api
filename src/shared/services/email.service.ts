@@ -24,7 +24,7 @@ interface IEmailPayloadToSes {
 
 export interface IEmailDataTemplate {
   template: string;
-  templateData: string; // json string
+  templateData: unknown;
 }
 
 export interface IEmailPayload {
@@ -53,7 +53,7 @@ export class EmailService {
         source: param.source,
         emailData: {
           template: param.template,
-          templateData: JSON.stringify(param.templateData),
+          templateData: param.templateData,
         },
       },
     };

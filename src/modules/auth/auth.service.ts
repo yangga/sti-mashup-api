@@ -3,10 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
+import type { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import type { IEmailPayload } from '../../shared/services/email.service';
 import { EmailService } from '../../shared/services/email.service';
-import { TokenService } from '../../shared/services/token.service';
+import { VerificationTokenService } from '../../shared/services/verification-token.service';
 import type { UserDto } from '../user/dto/user-dto';
 import type { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
@@ -22,7 +23,7 @@ export class AuthService {
     private readonly configService: ApiConfigService,
     private readonly userService: UserService,
     private readonly emailService: EmailService,
-    private readonly tokenService: TokenService,
+    private readonly tokenService: VerificationTokenService,
   ) {}
 
   async emailVerification(
@@ -73,8 +74,8 @@ export class AuthService {
   }: {
     code: string;
     ttl: number;
-  }): Promise<void> {
-    await this.tokenService.extendToken(code, ttl);
+  }): Promise<VerificationTokenDto> {
+    return this.tokenService.extendToken(code, ttl);
   }
 
   async createToken(user: UserEntity | UserDto): Promise<TokenPayloadDto> {

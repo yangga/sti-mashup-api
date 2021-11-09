@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
 import type { ValidationError } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsNumber, IsObject, IsString } from 'class-validator';
 
 export class ErrorResponseDto {
   @ApiProperty()
@@ -19,13 +13,13 @@ export class ErrorResponseDto {
   @IsString()
   message: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
   error?: string;
 }
 
 export class ValidationErrorResponseDto implements ValidationError {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsObject()
   target?: Record<string, any> | undefined;
 
@@ -33,20 +27,18 @@ export class ValidationErrorResponseDto implements ValidationError {
   @IsString()
   property: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsObject()
   value?: any;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsObject()
   constraints?: Record<string, string> | undefined;
 
-  @ApiProperty()
-  @IsOptional()
+  @ApiPropertyOptional()
   @IsArray()
   children?: ValidationError[] | undefined;
 
-  @ApiProperty()
-  @IsObject()
+  @ApiPropertyOptional()
   contexts?: Record<string, any> | undefined;
 }

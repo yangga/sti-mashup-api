@@ -11,7 +11,7 @@ const headerOptions: Record<CommonHeaderKeys, ApiHeaderOptions> = {
     name: 'Locale',
     description: '사용자 언어 Locale',
     required: false,
-    schema: { type: 'string' },
+    schema: { type: 'string', default: 'en' },
     example: 'en',
   },
 };

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import type { VerificationTokenDto } from '../dto/verification-token.dto';
 import type { IToken } from '../models/action-code.model';
 import { TokenModel } from '../models/action-code.model';
 import { GeneratorService } from './generator.service';
@@ -9,7 +10,7 @@ export type Code = string;
 export type SourceType = 'email';
 
 @Injectable()
-export class TokenService {
+export class VerificationTokenService {
   constructor(private readonly generatorService: GeneratorService) {}
 
   async createToken(
@@ -47,7 +48,7 @@ export class TokenService {
     return doc.code;
   }
 
-  async extendToken(code: string, ttl: number): Promise<void> {
+  async extendToken(code: string, ttl: number): Promise<VerificationTokenDto> {
     const doc = await TokenModel.primaryKey.get(code);
 
     if (doc === null) {
@@ -56,6 +57,11 @@ export class TokenService {
 
     doc.ttl = Math.max(ttl, doc.ttl);
     await doc.save();
+
+    return {
+      action: doc.action,
+      data: doc.data,
+    };
   }
 
   async validateToken(code: string): Promise<boolean> {

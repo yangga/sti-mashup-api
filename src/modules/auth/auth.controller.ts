@@ -26,6 +26,7 @@ import { ApiFile } from '../../decorators/swagger.schema';
 import { AuthGuard } from '../../guards/auth.guard';
 import { AuthUserInterceptor } from '../../interceptors/auth-user-interceptor.service';
 import { IFile } from '../../interfaces';
+import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
@@ -67,11 +68,11 @@ export class AuthController {
 
   @Version('1')
   @Post('verify/email/confirm')
-  @ResponseData()
+  @ResponseData(VerificationTokenDto)
   async confirmEmailVerification(
     @Body() body: VerifyEmailConfirmDto,
-  ): Promise<void> {
-    await this.authService.extendEmailVerification({
+  ): Promise<VerificationTokenDto> {
+    return this.authService.extendEmailVerification({
       code: body.code,
       ttl: Math.floor(Date.now() * 0.001 + 30 * 1000),
     });

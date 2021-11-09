@@ -6,9 +6,9 @@ import { ApiConfigService } from './services/api-config.service';
 import { AwsS3Service } from './services/aws-s3.service';
 import { EmailService } from './services/email.service';
 import { GeneratorService } from './services/generator.service';
-import { TokenService } from './services/token.service';
 import { TranslationService } from './services/translation.service';
 import { ValidatorService } from './services/validator.service';
+import { VerificationTokenService } from './services/verification-token.service';
 
 const providers = [
   ApiConfigService,
@@ -17,7 +17,7 @@ const providers = [
   GeneratorService,
   TranslationService,
   EmailService,
-  TokenService,
+  VerificationTokenService,
   // {
   //   provide: 'NATS_SERVICE',
   //   useFactory: (configService: ApiConfigService) => {

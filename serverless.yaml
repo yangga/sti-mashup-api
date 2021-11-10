@@ -17,6 +17,9 @@ custom:
   tscpaths:
     buildPath: .build
 
+  optimize:
+    exclude: ['@ntegral/nestjs-sentry']
+
 provider:
   name: aws
   region: ap-northeast-2

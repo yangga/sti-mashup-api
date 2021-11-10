@@ -18,8 +18,8 @@
       "port": 7777,
       "console": "integratedTerminal",
       "env": {
-        "AWS_ACCESS_KEY_ID": "AKIA4QQSHAMQGIL5EQNG",
-        "AWS_SECRET_ACCESS_KEY": "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",
+        "AWS_ACCESS_KEY_ID": "AKIA4QQSHAMQJHCZHYP3",
+        "AWS_SECRET_ACCESS_KEY": "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",
         "AWS_REGION": "ap-northeast-2",
         "STAGE": "dev"
       }

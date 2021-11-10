@@ -3,7 +3,10 @@ import './boilerplate.polyfill';
 import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { GraphqlInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
+import { LogLevel } from '@sentry/types';
 import { SharedIniFileCredentials, SQS } from 'aws-sdk';
 import { AwsSdkModule } from 'nest-aws-sdk';
 import { I18nJsonParser, I18nModule } from 'nestjs-i18n';
@@ -18,8 +21,20 @@ import { UserModule } from './modules/user/user.module';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
 
+const STAGE = process.env.STAGE;
+
 @Module({
   imports: [
+    SentryModule.forRoot({
+      dsn: 'https://37e66ebf907b48a0a424cb1131c87e5a@o1064933.ingest.sentry.io/6056082',
+      debug: STAGE === 'dev',
+      environment: STAGE,
+      logLevel: LogLevel.Debug,
+      close: {
+        enabled: true,
+        timeout: 1500,
+      },
+    }),
     AuthModule,
     UserModule,
     PostModule,
@@ -67,6 +82,12 @@ import { SharedModule } from './shared/shared.module';
         },
       ],
     }),
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: () => new GraphqlInterceptor(),
+    },
   ],
 })
 export class AppModule implements NestModule {

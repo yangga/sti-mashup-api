@@ -8,6 +8,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { Transport } from '@nestjs/microservices';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { SentryService } from '@ntegral/nestjs-sentry';
 import compression from 'compression';
 import RateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -54,7 +55,7 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(reflector),
-    new ErrorsInterceptor(),
+    new ErrorsInterceptor(new SentryService()),
   );
 
   app.useGlobalPipes(

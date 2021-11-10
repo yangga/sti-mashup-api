@@ -3,6 +3,11 @@ service: sti-mashup-api
 package:
   patterns:
     - 'artifact/**/*'
+    - '!.vscode/**'
+    - '!.git/**'
+    - '!.serverless/**'
+    - '!.build/**'
+    - '!dist/**'
 
 useDotenv: true
 

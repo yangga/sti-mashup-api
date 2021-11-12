@@ -21,7 +21,10 @@ import { CommonHeaderDto } from '../../common/dto/common-header.dto';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 import { RequestHeader } from '../../decorators/request-header.decorator';
-import { ResponseData } from '../../decorators/response-data.decorators';
+import {
+  ResponseData,
+  ResponseError,
+} from '../../decorators/response-data.decorators';
 import { ApiFile } from '../../decorators/swagger.schema';
 import { AuthGuard } from '../../guards/auth.guard';
 import { AuthUserInterceptor } from '../../interceptors/auth-user-interceptor.service';
@@ -69,6 +72,7 @@ export class AuthController {
   @Version('1')
   @Post('verify/email/confirm')
   @ResponseData(VerificationTokenDto)
+  @ResponseError(HttpStatus.NOT_FOUND)
   async confirmEmailVerification(
     @Body() body: VerifyEmailConfirmDto,
   ): Promise<VerificationTokenDto> {

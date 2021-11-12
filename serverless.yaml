@@ -8,6 +8,7 @@ package:
     - '!.serverless/**'
     - '!.build/**'
     - '!dist/**'
+    - '!nodemon*'
 
 useDotenv: true
 

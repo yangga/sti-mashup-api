@@ -1,10 +1,12 @@
 {
-    "watch": [
-        "src"
-    ],
-    "ext": "ts",
-    "ignore": [
-        "src/**/*.spec.ts"
-    ],
-    "exec": "cross-env TS_NODE_CACHE=false node --inspect -r ts-node/register src/main"
+  "watch": ["src"],
+  "ext": "ts",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "cross-env TS_NODE_CACHE=false node --inspect -r ts-node/register src/main",
+  "env": {
+    "AWS_ACCESS_KEY_ID": "AKIA4QQSHAMQO7LCREF4",
+    "AWS_SECRET_ACCESS_KEY": "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",
+    "AWS_REGION": "ap-northeast-2",
+    "STAGE": "dev"
+  }
 }

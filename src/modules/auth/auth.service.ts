@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
@@ -7,10 +11,15 @@ import type { VerificationTokenDto } from '../../shared/dto/verification-token.d
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import type { IEmailPayload } from '../../shared/services/email.service';
 import { EmailService } from '../../shared/services/email.service';
-import { VerificationTokenService } from '../../shared/services/verification-token.service';
+import {
+  ActionType,
+  SourceType,
+  VerificationTokenService,
+} from '../../shared/services/verification-token.service';
 import type { UserDto } from '../user/dto/user-dto';
 import type { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
+import { TokenNotFoundException } from './../../exceptions/token-not-found.exception';
 import { TokenPayloadDto } from './dto/TokenPayloadDto';
 import type { UserLoginDto } from './dto/UserLoginDto';
 
@@ -26,20 +35,17 @@ export class AuthService {
     private readonly tokenService: VerificationTokenService,
   ) {}
 
-  async emailVerification(
-    action: string,
-    toAddress: string,
-    locale: string,
-  ): Promise<void> {
+  async emailVerification(toAddress: string, locale: string): Promise<void> {
     const ttl =
       Math.floor(Date.now() * 0.001) +
       (this.configService.emailVerificationTimeoutMin + 1) * 60;
 
     const code = await this.tokenService.createToken(
-      action,
-      'email',
+      ActionType.SIGNUP,
+      SourceType.EMAIL,
       toAddress,
       ttl,
+      toAddress,
     );
 
     const params = new URLSearchParams();
@@ -76,6 +82,32 @@ export class AuthService {
     ttl: number;
   }): Promise<VerificationTokenDto> {
     return this.tokenService.extendToken(code, ttl);
+  }
+
+  async getEmailVerification({ code }: { code: string }): Promise<{
+    code: string;
+    email: string;
+  }> {
+    const res = await this.tokenService.getToken(code);
+
+    if (!res) {
+      throw new TokenNotFoundException();
+    }
+
+    if (res.action !== ActionType.SIGNUP) {
+      throw new InternalServerErrorException();
+    }
+
+    const email: string = res.data as string;
+
+    return {
+      code,
+      email,
+    };
+  }
+
+  async expireEmailVerification({ code }: { code: string }): Promise<void> {
+    await this.tokenService.terminateToken(code);
   }
 
   async createToken(user: UserEntity | UserDto): Promise<TokenPayloadDto> {

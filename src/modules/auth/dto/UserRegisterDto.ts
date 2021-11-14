@@ -1,44 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
-  IsOptional,
-  IsPhoneNumber,
   IsString,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
-import { Column } from 'typeorm';
 
+import { Match } from '../../../decorators/match.decorator';
 import { Trim } from '../../../decorators/transforms.decorator';
 
 export class UserRegisterDto {
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @MinLength(4)
+  @MaxLength(20)
   @Trim()
-  readonly firstName: string;
+  readonly username: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @MinLength(4)
+  @MaxLength(20)
   @Trim()
-  readonly lastName: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsEmail()
-  @IsNotEmpty()
-  @Trim()
-  readonly email: string;
-
-  @ApiProperty({ minLength: 6 })
-  @IsString()
-  @MinLength(6)
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![\n.])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'password too weak',
+  })
   readonly password: string;
 
   @ApiProperty()
-  @Column()
-  @IsPhoneNumber()
-  @IsOptional()
-  phone: string;
+  @IsString()
+  @MinLength(4)
+  @MaxLength(20)
+  @Match('password')
+  @Trim()
+  readonly passwordConfirm: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @Trim()
+  readonly registerCode: string;
 }

@@ -10,6 +10,7 @@ import { SnakeNamingStrategy } from '../../snake-naming.strategy';
 const isLocal = process.env.NODE_ENV === 'local';
 
 const AWS_ACCOUNT_ID = '860105409312';
+const DEFAULT_JWT_EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
 @Injectable()
 export class ApiConfigService {
@@ -164,7 +165,8 @@ export class ApiConfigService {
   get authConfig() {
     return {
       jwtSecret: this.getString('JWT_SECRET_KEY'),
-      jwtExpirationTime: this.getNumber('JWT_EXPIRATION_TIME'),
+      jwtExpirationTime:
+        this.getNumber('JWT_EXPIRATION_TIME') || DEFAULT_JWT_EXPIRATION_TIME,
     };
   }
 

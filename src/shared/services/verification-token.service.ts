@@ -7,14 +7,20 @@ import { GeneratorService } from './generator.service';
 
 export type Code = string;
 
-export type SourceType = 'email';
+export enum ActionType {
+  SIGNUP = 'signup',
+}
+
+export enum SourceType {
+  EMAIL = 'email',
+}
 
 @Injectable()
 export class VerificationTokenService {
   constructor(private readonly generatorService: GeneratorService) {}
 
   async createToken(
-    action: string,
+    action: ActionType,
     sourceType: SourceType,
     sourceData: string,
     ttl: number,
@@ -48,8 +54,8 @@ export class VerificationTokenService {
     return doc.code;
   }
 
-  async extendToken(code: string, ttl: number): Promise<VerificationTokenDto> {
-    const doc = await TokenModel.primaryKey.get(code);
+  async extendToken(token: string, ttl: number): Promise<VerificationTokenDto> {
+    const doc = await TokenModel.primaryKey.get(token);
 
     if (doc === null) {
       throw new NotFoundException();

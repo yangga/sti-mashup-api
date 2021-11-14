@@ -16,10 +16,9 @@ import { PublicStrategy } from './public.strategy';
     JwtModule.registerAsync({
       useFactory: (configService: ApiConfigService) => ({
         secretOrPrivateKey: configService.authConfig.jwtSecret,
-        // if you want to use token with expiration date
-        // signOptions: {
-        //     expiresIn: configService.getNumber('JWT_EXPIRATION_TIME'),
-        // },
+        signOptions: {
+          expiresIn: configService.authConfig.jwtExpirationTime,
+        },
       }),
       inject: [ApiConfigService],
     }),

@@ -5,13 +5,11 @@ import { UserEntity } from '../../modules/user/user.entity';
 
 define(UserEntity, (faker) => {
   const gender = faker.random.number(1);
-  const firstName = faker.name.firstName(gender);
-  const lastName = faker.name.lastName(gender);
-  const email = faker.internet.email(firstName, lastName);
+  const username = faker.name.firstName(gender);
+  const email = faker.internet.email(username, username);
 
   const user = new UserEntity();
-  user.firstName = firstName;
-  user.lastName = lastName;
+  user.username = username;
   user.email = email;
   user.role = RoleType.USER;
   user.password = '111111';

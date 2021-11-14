@@ -10,6 +10,7 @@ import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import type { UserRegisterDto } from '../auth/dto/UserRegisterDto';
 import type { UserDto } from './dto/user-dto';
+import { UserPicDto } from './dto/UserPicDto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import type { UserEntity } from './user.entity';
 import { UserRepository } from './user.repository';
@@ -51,17 +52,10 @@ export class UserService {
 
   async createUser(
     userRegisterDto: UserRegisterDto,
-    file: IFile,
+    { email }: { email: string },
   ): Promise<UserEntity> {
     const user = this.userRepository.create(userRegisterDto);
-
-    if (file && !this.validatorService.isImage(file.mimetype)) {
-      throw new FileNotImageException();
-    }
-
-    if (file) {
-      user.avatar = await this.awsS3Service.uploadImage(file);
-    }
+    user.email = email;
 
     return this.userRepository.save(user);
   }
@@ -75,10 +69,10 @@ export class UserService {
     return items.toPageDto(pageMetaDto);
   }
 
-  async getUser(userId: string): Promise<UserDto> {
+  async getUser(id: string): Promise<UserDto> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
-    queryBuilder.where('user.id = :userId', { userId });
+    queryBuilder.where('user.id = :id', { id });
 
     const userEntity = await queryBuilder.getOne();
 
@@ -87,5 +81,27 @@ export class UserService {
     }
 
     return userEntity.toDto();
+  }
+
+  async uploadUserPic(id: string, file: IFile): Promise<UserPicDto> {
+    if (file && !this.validatorService.isImage(file.mimetype)) {
+      throw new FileNotImageException();
+    }
+
+    const user = await this.findOne({
+      id,
+    });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    if (file) {
+      user.avatar = await this.awsS3Service.uploadImage(file);
+    }
+
+    await this.userRepository.save(user);
+
+    return new UserPicDto(id, user.avatar);
   }
 }

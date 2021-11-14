@@ -4,11 +4,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
-  UploadedFile,
   UseGuards,
   UseInterceptors,
-  Version,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,10 +24,9 @@ import {
   ResponseData,
   ResponseError,
 } from '../../decorators/response-data.decorators';
-import { ApiFile } from '../../decorators/swagger.schema';
+import { TokenNotFoundException } from '../../exceptions/token-not-found.exception';
 import { AuthGuard } from '../../guards/auth.guard';
 import { AuthUserInterceptor } from '../../interceptors/auth-user-interceptor.service';
-import { IFile } from '../../interfaces';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserEntity } from '../user/user.entity';
@@ -43,15 +41,19 @@ import {
 } from './dto/VerificationDto';
 
 @CommonHeader()
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 @ApiTags('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
   ) {}
 
-  @Version('1')
   @Post('verify/email')
   @ApiOperation({
     summary: '',
@@ -62,14 +64,9 @@ export class AuthController {
     @RequestHeader(CommonHeaderDto) header: CommonHeaderDto,
     @Body() body: VerifyEmailReqDto,
   ): Promise<void> {
-    await this.authService.emailVerification(
-      'signup',
-      body.email,
-      header.locale,
-    );
+    await this.authService.emailVerification(body.email, header.locale);
   }
 
-  @Version('1')
   @Post('verify/email/confirm')
   @ResponseData(VerificationTokenDto)
   @ResponseError(HttpStatus.NOT_FOUND)
@@ -82,26 +79,37 @@ export class AuthController {
     });
   }
 
-  @Version('1')
   @Post('register')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: UserDto, description: 'Successfully Registered' })
-  @ApiFile({ name: 'avatar' })
+  @ResponseData(UserDto)
   async userRegister(
     @Body() userRegisterDto: UserRegisterDto,
-    @UploadedFile() file: IFile,
   ): Promise<UserDto> {
-    const createdUser = await this.userService.createUser(
-      userRegisterDto,
-      file,
-    );
+    const { registerCode } = userRegisterDto;
+
+    const verfication = await this.authService.getEmailVerification({
+      code: registerCode,
+    });
+
+    if (!verfication) {
+      throw new TokenNotFoundException();
+    }
+
+    const createdUser = await this.userService.createUser(userRegisterDto, {
+      email: verfication.email,
+    });
+
+    try {
+      await this.authService.expireEmailVerification({ code: registerCode });
+    } catch (error) {
+      this.logger.log(error);
+    }
 
     return createdUser.toDto({
       isActive: true,
     });
   }
 
-  @Version('1')
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -118,7 +126,6 @@ export class AuthController {
     return new LoginPayloadDto(userEntity.toDto(), token);
   }
 
-  @Version('1')
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)

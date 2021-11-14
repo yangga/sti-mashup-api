@@ -7,9 +7,8 @@
   "license": "MIT",
   "scripts": {
     "build:prod": "tsc -p tsconfig.build.json",
-    "build:dev": "tsc -p tsconfig.build.json",
+    "build:dev": "nest build",
     "postbuild:prod": "copyfiles --up 1 src/**/*.json dist",
-    "postbuild:dev": "copyfiles --up 1 src/**/*.json dist",
     "start:hmr": "node dist/main.hmr.ts",
     "start:dev": "ts-node src/main.ts",
     "start:prod": "node dist/main.js",

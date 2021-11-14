@@ -19,6 +19,7 @@ const configs: TypeOrmModuleOptions & { seeds: string[]; factories: string[] } =
     migrations: ['src/database/migrations/*{.ts,.js}'],
     seeds: ['src/database/seeds/**/*{.ts,.js}'],
     factories: ['src/database/factories/**/*{.ts,.js}'],
+    synchronize: process.env.NODE_ENV === 'local' ? true : false,
   };
 
 module.exports = configs;

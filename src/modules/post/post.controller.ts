@@ -4,7 +4,10 @@ import { ClientProxy } from '@nestjs/microservices';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 
 @CommonHeader()
-@Controller('posts')
+@Controller({
+  path: 'posts',
+  version: '1',
+})
 export class PostController {
   constructor(
     @Optional() @Inject('NATS_SERVICE') private client: ClientProxy,

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { TokenType } from '../../common/constants/token-type';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
 import type { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
@@ -113,7 +114,11 @@ export class AuthService {
   async createToken(user: UserEntity | UserDto): Promise<TokenPayloadDto> {
     return new TokenPayloadDto({
       expiresIn: this.configService.authConfig.jwtExpirationTime,
-      accessToken: await this.jwtService.signAsync({ id: user.id }),
+      accessToken: await this.jwtService.signAsync({
+        userId: user.id,
+        type: TokenType.ACCESS_TOKEN,
+        role: user.role,
+      }),
     });
   }
 

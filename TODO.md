@@ -2,7 +2,7 @@
 
 ## Next
 
-* [get] auth/me
+* email, username unique 체크
 * upload user pic
 * logout
 * 탈퇴

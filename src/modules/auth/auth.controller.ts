@@ -2,31 +2,23 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpStatus,
   Logger,
   Post,
-  UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { RoleType } from '../../common/constants/role-type';
 import { CommonHeaderDto } from '../../common/dto/common-header.dto';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
+import { Auth } from '../../decorators/http.decorators';
 import { RequestHeader } from '../../decorators/request-header.decorator';
 import {
   ResponseData,
   ResponseError,
 } from '../../decorators/response-data.decorators';
 import { TokenNotFoundException } from '../../exceptions/token-not-found.exception';
-import { AuthGuard } from '../../guards/auth.guard';
-import { AuthUserInterceptor } from '../../interceptors/auth-user-interceptor.service';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserEntity } from '../user/user.entity';
@@ -68,6 +60,10 @@ export class AuthController {
   }
 
   @Post('verify/email/confirm')
+  @ApiOperation({
+    summary: '',
+    description: '인증 메일 확인',
+  })
   @ResponseData(VerificationTokenDto)
   @ResponseError(HttpStatus.NOT_FOUND)
   async confirmEmailVerification(
@@ -80,7 +76,10 @@ export class AuthController {
   }
 
   @Post('register')
-  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '',
+    description: '가입',
+  })
   @ResponseData(UserDto)
   async userRegister(
     @Body() userRegisterDto: UserRegisterDto,
@@ -111,11 +110,11 @@ export class AuthController {
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({
-    type: LoginPayloadDto,
+  @ApiOperation({
+    summary: '',
     description: 'User info with access token',
   })
+  @ResponseData(LoginPayloadDto)
   async userLogin(
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
@@ -127,10 +126,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard)
-  @UseInterceptors(AuthUserInterceptor)
-  @ApiBearerAuth()
+  @Auth([RoleType.USER])
   @ResponseData(UserDto)
   getCurrentUser(@AuthUser() user: UserEntity): UserDto {
     return user.toDto();

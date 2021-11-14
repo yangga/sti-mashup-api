@@ -10,13 +10,13 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role-type';
 import { PageDto } from '../../common/dto/page.dto';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
-import { Auth, UUIDParam } from '../../decorators/http.decorators';
+import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
 import { ApiFile } from '../../decorators/swagger.schema';
 import { AuthGuard } from '../../guards/auth.guard';
@@ -53,13 +53,12 @@ export class UserController {
   }
 
   @Get()
-  @Auth([RoleType.USER])
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOperation({
+    summary: '',
     description: 'Get users list',
-    type: PageDto,
   })
+  @Auth([RoleType.USER])
+  @ResponseData(PageDto)
   getUsers(
     @Query(new ValidationPipe({ transform: true }))
     pageOptionsDto: UsersPageOptionsDto,
@@ -68,14 +67,13 @@ export class UserController {
   }
 
   @Get(':id')
-  @Auth([RoleType.USER])
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiOperation({
+    summary: '',
     description: 'Get users list',
-    type: UserDto,
   })
-  getUser(@UUIDParam('id') id: string): Promise<UserDto> {
+  @Auth([RoleType.USER])
+  @ResponseData(UserDto)
+  getUser(@Query('id') id: number): Promise<UserDto> {
     return this.userService.getUser(id);
   }
 

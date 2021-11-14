@@ -69,7 +69,7 @@ export class UserService {
     return items.toPageDto(pageMetaDto);
   }
 
-  async getUser(id: string): Promise<UserDto> {
+  async getUser(id: number): Promise<UserDto> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     queryBuilder.where('user.id = :id', { id });
@@ -83,7 +83,7 @@ export class UserService {
     return userEntity.toDto();
   }
 
-  async uploadUserPic(id: string, file: IFile): Promise<UserPicDto> {
+  async uploadUserPic(id: number, file: IFile): Promise<UserPicDto> {
     if (file && !this.validatorService.isImage(file.mimetype)) {
       throw new FileNotImageException();
     }

@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 import { Trim } from '../../../decorators/transforms.decorator';
 
 export class UserPicDto {
   @ApiProperty()
-  @IsString()
+  @IsNumber()
   @Trim()
-  readonly id: string;
+  readonly id: number;
 
   @ApiProperty()
   @IsString()
   @Trim()
   readonly imgUrl?: string;
 
-  constructor(id: string, imgUrl?: string) {
+  constructor(id: number, imgUrl?: string) {
     this.id = id;
     this.imgUrl = imgUrl;
   }

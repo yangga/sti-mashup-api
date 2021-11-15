@@ -3,7 +3,6 @@
 ## Next
 
 * upload user pic
-* 탈퇴
 
 ## Later
 

@@ -3,6 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 import { AbstractEntity } from '../../common/abstract.entity';
 import { RoleType } from '../../common/constants/role-type';
 import { UseDto } from '../../decorators/use-dto.decorator';
+import { BoolBitTransformer } from '../../value-transformers/bool-bit.transformer';
 import type { UserDtoOptions } from './dto/user-dto';
 import { UserDto } from './dto/user-dto';
 
@@ -31,4 +32,11 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
     nullable: true,
   })
   blockUntilAt?: Date;
+
+  @Column({
+    type: 'bit',
+    transformer: new BoolBitTransformer(),
+    nullable: true,
+  })
+  deleted: boolean;
 }

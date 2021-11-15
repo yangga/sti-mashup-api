@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Logger,
@@ -19,19 +20,21 @@ import {
   ResponseError,
 } from '../../decorators/response-data.decorators';
 import { TokenNotFoundException } from '../../exceptions/token-not-found.exception';
-import { UserBlockedException } from '../../exceptions/user-blocked.exception copy';
+import { UserBlockedException } from '../../exceptions/user-blocked.exception';
+import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
-import { LoginPayloadDto } from './dto/LoginPayloadDto';
-import { UserLoginDto } from './dto/UserLoginDto';
-import { UserRegisterDto } from './dto/UserRegisterDto';
+import { LoginPayloadDto } from './dto/login-payload.dto';
+import { UserLoginDto } from './dto/user-login.dto';
+import { UserQuitDto } from './dto/user-quit.dto';
+import { UserRegisterDto } from './dto/user-register.dto';
 import {
   VerifyEmailConfirmDto,
   VerifyEmailReqDto,
-} from './dto/VerificationDto';
+} from './dto/verification.dto';
 
 @CommonHeader()
 @Controller({
@@ -128,9 +131,27 @@ export class AuthController {
       throw new UserBlockedException();
     }
 
+    if (userEntity.deleted) {
+      throw new UserNotFoundException();
+    }
+
     const token = await this.authService.createToken(userEntity);
 
     return new LoginPayloadDto(userEntity.toDto(), token);
+  }
+
+  @Delete('quit')
+  @ApiOperation({
+    summary: '',
+    description: '탈퇴',
+  })
+  @Auth([RoleType.USER])
+  @ResponseData()
+  async userQuit(
+    @AuthUser() user: UserEntity,
+    @Body() userLoginDto: UserQuitDto,
+  ): Promise<void> {
+    await this.userService.withdrawUser(user.id, userLoginDto);
   }
 
   @Get('me')

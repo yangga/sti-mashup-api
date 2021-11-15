@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TokenType } from '../../common/constants/token-type';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
+import { UserWithdrawalException } from '../../exceptions/user-withdrawal.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
 import type { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { ApiConfigService } from '../../shared/services/api-config.service';
@@ -22,8 +23,8 @@ import type { UserDto } from '../user/dto/user-dto';
 import type { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { TokenNotFoundException } from './../../exceptions/token-not-found.exception';
-import { TokenPayloadDto } from './dto/TokenPayloadDto';
-import type { UserLoginDto } from './dto/UserLoginDto';
+import { TokenPayloadDto } from './dto/token-payload.dto';
+import type { UserLoginDto } from './dto/user-login.dto';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +44,10 @@ export class AuthService {
     });
 
     if (oldUser) {
+      if (oldUser.deleted) {
+        throw new UserWithdrawalException();
+      }
+
       throw new EmailAlreadyUsedException();
     }
 

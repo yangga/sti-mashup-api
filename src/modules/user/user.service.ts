@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import type { UserQuitDto } from 'modules/auth/dto/user-quit.dto';
 import type { FindConditions } from 'typeorm';
 
 import type { PageDto } from '../../common/dto/page.dto';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { FileNotImageException } from '../../exceptions/file-not-image.exception';
-import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import type { IFile } from '../../interfaces';
+import { UtilsProvider } from '../../providers/utils.provider';
 import { AwsS3Service } from '../../shared/services/aws-s3.service';
 import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
-import type { UserRegisterDto } from '../auth/dto/UserRegisterDto';
+import type { UserRegisterDto } from '../auth/dto/user-register.dto';
+import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { UserDto } from './dto/user-dto';
 import { UserPicDto } from './dto/UserPicDto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
@@ -55,7 +57,7 @@ export class UserService {
     userRegisterDto: UserRegisterDto,
     { email }: { email: string },
   ): Promise<UserEntity> {
-    const oldUser = await this.findOne({
+    const oldUser = await this.findByUsernameOrEmail({
       username: userRegisterDto.username,
       email,
     });
@@ -68,6 +70,24 @@ export class UserService {
     user.email = email;
 
     return this.userRepository.save(user);
+  }
+
+  async withdrawUser(userId: number, userLoginDto: UserQuitDto): Promise<void> {
+    const user = await this.findOne({
+      id: userId,
+    });
+
+    const isPasswordValid = await UtilsProvider.validateHash(
+      userLoginDto.password,
+      user?.password,
+    );
+
+    if (!user || !isPasswordValid) {
+      throw new UserNotFoundException();
+    }
+
+    user.deleted = true;
+    await this.userRepository.save(user);
   }
 
   async getUsers(

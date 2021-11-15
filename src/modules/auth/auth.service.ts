@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 
 import { TokenType } from '../../common/constants/token-type';
+import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
 import type { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
@@ -37,6 +38,14 @@ export class AuthService {
   ) {}
 
   async emailVerification(toAddress: string, locale: string): Promise<void> {
+    const oldUser = await this.userService.findOne({
+      email: toAddress,
+    });
+
+    if (oldUser) {
+      throw new EmailAlreadyUsedException();
+    }
+
     const ttl =
       Math.floor(Date.now() * 0.001) +
       (this.configService.emailVerificationTimeoutMin + 1) * 60;

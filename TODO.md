@@ -2,9 +2,7 @@
 
 ## Next
 
-* email, username unique 체크
 * upload user pic
-* logout
 * 탈퇴
 
 ## Later

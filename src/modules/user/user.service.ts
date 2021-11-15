@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { FindConditions } from 'typeorm';
 
 import type { PageDto } from '../../common/dto/page.dto';
+import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { FileNotImageException } from '../../exceptions/file-not-image.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import type { IFile } from '../../interfaces';
@@ -54,6 +55,15 @@ export class UserService {
     userRegisterDto: UserRegisterDto,
     { email }: { email: string },
   ): Promise<UserEntity> {
+    const oldUser = await this.findOne({
+      username: userRegisterDto.username,
+      email,
+    });
+
+    if (oldUser) {
+      throw new EmailAlreadyUsedException();
+    }
+
     const user = this.userRepository.create(userRegisterDto);
     user.email = email;
 

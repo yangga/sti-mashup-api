@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import type { RoleType } from '../../common/constants/role-type';
 import { TokenType } from '../../common/constants/token-type';
+import { UserBlockedException } from '../../exceptions/user-blocked.exception copy';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import type { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
@@ -36,6 +37,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException();
+    }
+
+    if (user.blockUntilAt && user.blockUntilAt.getTime() > Date.now()) {
+      throw new UserBlockedException();
     }
 
     return user;

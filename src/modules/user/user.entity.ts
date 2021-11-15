@@ -25,4 +25,10 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
 
   @Column({ nullable: true })
   avatar?: string;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  blockUntilAt?: Date;
 }

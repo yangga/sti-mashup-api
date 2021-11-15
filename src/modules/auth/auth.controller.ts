@@ -19,6 +19,7 @@ import {
   ResponseError,
 } from '../../decorators/response-data.decorators';
 import { TokenNotFoundException } from '../../exceptions/token-not-found.exception';
+import { UserBlockedException } from '../../exceptions/user-blocked.exception copy';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user-dto';
 import { UserEntity } from '../user/user.entity';
@@ -119,6 +120,13 @@ export class AuthController {
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
     const userEntity = await this.authService.validateUser(userLoginDto);
+
+    if (
+      userEntity.blockUntilAt &&
+      userEntity.blockUntilAt.getTime() > Date.now()
+    ) {
+      throw new UserBlockedException();
+    }
 
     const token = await this.authService.createToken(userEntity);
 

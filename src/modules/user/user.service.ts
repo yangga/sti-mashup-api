@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
 import type { UserQuitDto } from 'modules/auth/dto/user-quit.dto';
+import sharp from 'sharp';
 import type { FindConditions } from 'typeorm';
 
 import type { PageDto } from '../../common/dto/page.dto';
@@ -124,6 +125,12 @@ export class UserService {
     if (file && !this.validatorService.isImage(file.mimetype)) {
       throw new FileNotImageException();
     }
+
+    file.buffer = await sharp(file.buffer)
+      .resize(128, 128, {
+        fit: 'inside',
+      })
+      .toBuffer();
 
     const user = await this.findOne({
       id,

@@ -142,7 +142,7 @@ export class ApiConfigService {
       s3: {
         bucketRegion: this.getString('AWS_S3_BUCKET_REGION'),
         bucketApiVersion: this.getString('AWS_S3_API_VERSION'),
-        bucketName: this.getString('AWS_S3_BUCKET_NAME'),
+        bucketName: `sti-infra-${this.stage}-data`,
       },
     };
   }

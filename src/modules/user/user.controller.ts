@@ -3,14 +3,12 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Put,
+  Post,
   Query,
   UploadedFile,
-  UseGuards,
-  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role-type';
 import { PageDto } from '../../common/dto/page.dto';
@@ -19,8 +17,6 @@ import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
 import { ApiFile } from '../../decorators/swagger.schema';
-import { AuthGuard } from '../../guards/auth.guard';
-import { AuthUserInterceptor } from '../../interceptors/auth-user-interceptor.service';
 import { IFile } from '../../interfaces';
 import { TranslationService } from '../../shared/services/translation.service';
 import { UserDto } from './dto/user-dto';
@@ -78,12 +74,10 @@ export class UserController {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  @Put('pic')
+  @Post('pic')
   @ResponseData(UserPicDto)
-  @UseGuards(AuthGuard)
-  @UseInterceptors(AuthUserInterceptor)
-  @ApiBearerAuth()
-  @ApiFile({ name: 'avatar' })
+  @Auth([RoleType.USER])
+  @ApiFile({ name: 'avatar' }, { isRequired: true })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental
   async userRegister(
     @AuthUser() user: UserEntity,

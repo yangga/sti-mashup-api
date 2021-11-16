@@ -6,6 +6,10 @@ import type { IFile } from '../../interfaces';
 import { ApiConfigService } from './api-config.service';
 import { GeneratorService } from './generator.service';
 
+export enum S3FileCategory {
+  USER_PIC = 'user-pic',
+}
+
 @Injectable()
 export class AwsS3Service {
   private readonly s3: AWS.S3;
@@ -24,20 +28,30 @@ export class AwsS3Service {
     this.s3 = new AWS.S3(options);
   }
 
-  async uploadImage(file: IFile): Promise<string> {
+  async upload(category: S3FileCategory, file: IFile): Promise<string> {
     const fileName = this.generatorService.fileName(
       <string>mime.extension(file.mimetype),
     );
-    const key = 'images/' + fileName;
+    const key = `${category}/${fileName}`;
     await this.s3
       .putObject({
         Bucket: this.configService.awsConfig.s3.bucketName,
         Body: file.buffer,
         ACL: 'public-read',
         Key: key,
+        ContentType: file.mimetype,
       })
       .promise();
 
     return key;
+  }
+
+  async delete(key: string): Promise<void> {
+    await this.s3
+      .deleteObject({
+        Bucket: this.configService.awsConfig.s3.bucketName,
+        Key: key,
+      })
+      .promise();
   }
 }

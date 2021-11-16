@@ -6,7 +6,6 @@ import { Trim } from '../../../decorators/transforms.decorator';
 export class UserPicDto {
   @ApiProperty()
   @IsNumber()
-  @Trim()
   readonly id: number;
 
   @ApiProperty()

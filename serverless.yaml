@@ -9,6 +9,7 @@ package:
     - '!.build/**'
     - '!dist/**'
     - '!nodemon*'
+    - '!test.js'
 
 useDotenv: true
 
@@ -36,6 +37,7 @@ provider:
   iam:
     role:
       statements:
+        # IAMCredentials - https://gist.github.com/dhavaln/27a688f99169166398795c6b9adaa427
         - Effect: Allow
           Action:
             - dynamodb:Query
@@ -46,7 +48,6 @@ provider:
             - dynamodb:BatchGetItem
             - dynamodb:BatchWriteItem
           Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/*'
-        # IAMCredentials - https://gist.github.com/dhavaln/27a688f99169166398795c6b9adaa427
         - Effect: Allow
           Action:
             - sqs:GetQueueAttributes
@@ -54,6 +55,12 @@ provider:
             - sqs:ReceiveMessage
             - sqs:DeleteMessage
           Resource: 'arn:aws:sqs:${self:provider.region}:*:*'
+        - Effect: Allow
+          Action:
+            - s3:DeleteObject
+            - s3:GetObject
+            - s3:PutObject
+          Resource: 'arn:aws:s3:::sti-data-${sls:stage}/*'
 
 # CloudFormation - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
 resources:

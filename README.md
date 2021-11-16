@@ -1,64 +1,18 @@
-# Awesome NestJS v8 Boilerplate
+# STI Mashup API
 
-[![Awesome NestJS](https://img.shields.io/badge/Awesome-NestJS-blue.svg?longCache=true&style=flat-square)](https://github.com/juliandavidmr/awesome-nestjs)
-
-> This is an ever-evolving, very opinionated architecture and dev environment for new node projects using [NestJS](https://nestjs.com). Questions, feedback, and for now, even bikeshedding are welcome. 😄
-
-## Getting started
+## INSTALLATION
 
 ```bash
-# 1. Clone the repository or click on "Use this template" button.
-git clone https://github.com/NarHakobyan/awesome-nest-boilerplate.git my-new-project
-
-# 2. Enter your newly-cloned folder.
-cd my-new-project
-
-# 3. Install dependencies. (Make sure yarn is installed: https://yarnpkg.com/lang/en/docs/install)
-yarn
-
-# 4. Run development server and open http://localhost:3000
-yarn start:dev
-
-# 5. Read the documentation linked below for "Setup and development".
+npm install
 ```
 
-## Features
+---
 
-<dl>
-  <dt><b>Quick scaffolding</b></dt>
-  <dd>Create modules, services, controller - right from the CLI!</dd>
+## YOU SHOULD KNOW THIS
 
-  <dt><b>Instant feedback</b></dt>
-  <dd>Enjoy the best DX (Developer eXperience) and code your app at the speed of thought! Your saved changes are reflected instantaneously.</dd>
+### @serverless-seoul/dynamorm 은 .env로 환경변수 선언이 안됩니다
 
-  <dt><b>JWT Authentication</b></dt>
-  <dd>Installed and configured JWT authentication.</dd>
+* NestJS는 dotenv를 사용하여 process.env를 구성합니다. 이 때 .env 파일에 있는 내용을 사용하는데, @serverless-seoul/dynamorm는 dotenv가 초기화되기 전에 process.env에 있는 환경변수를 사용합니다.
+* 그러므로, 구동 시 OS 레벨의 환경변수에 원하는 환경변수 값을 넣거나, nodemon을 사용할 경우 nodemon-[ENV].json 에 환경변수를 선언해야 합니다.
 
-  <dt><b>Next generation Typescript</b></dt>
-  <dd>Always up to date typescript version.</dd>
-
-  <dt><b>Industry-standard routing</b></dt>
-  <dd>It's natural to want to add pages (e.g. /about`) to your application, and routing makes this possible.</dd>
-
-  <dt><b>Environment Configuration</b></dt>
-  <dd>development, staging and production environment configurations</dd>
-
-  <dt><b>Swagger Api Documentation</b></dt>
-  <dd>Already integrated API documentation. To see all available endpoints visit http://localhost:3000/documentation</dd>
-
-  <dt><b>Linter</b></dt>  
-  <dd>eslint + prettier = ❤️</dd>
-</dl>
-
-## Documentation
-
-This project includes a `docs` folder with more details on:
-
-1.  [Setup and development](https://narhakobyan.github.io/awesome-nest-boilerplate/docs/development.html#first-time-setup)
-1.  [Architecture](https://narhakobyan.github.io/awesome-nest-boilerplate/docs/architecture.html)
-
-## Community
-
-For help, discussion about best practices, or any other conversation that would benefit from being searchable:
-
-[Discuss Awesome NestJS Boilerplate on GitHub](https://github.com/NarHakobyan/awesome-nest-boilerplate/discussions)
+---

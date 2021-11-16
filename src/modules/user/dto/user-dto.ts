@@ -4,7 +4,7 @@ import { RoleType } from '../../../common/constants/role-type';
 import { AbstractDto } from '../../../common/dto/abstract.dto';
 import type { UserEntity } from '../user.entity';
 
-export type UserDtoOptions = Partial<{ isActive: boolean }>;
+export type UserDtoOptions = Partial<{ isActive: boolean; isPublic: boolean }>;
 
 export class UserDto extends AbstractDto {
   @ApiProperty()
@@ -26,8 +26,8 @@ export class UserDto extends AbstractDto {
     super(user);
     this.username = user.username;
     this.role = user.role;
-    this.email = user.email;
+    this.email = options?.isPublic ? undefined : user.email;
     this.avatar = user.avatar;
-    this.isActive = options?.isActive;
+    this.isActive = options?.isActive || user.deleted ? false : undefined;
   }
 }

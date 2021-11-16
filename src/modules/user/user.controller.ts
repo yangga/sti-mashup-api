@@ -59,7 +59,9 @@ export class UserController {
     @Query(new ValidationPipe({ transform: true }))
     pageOptionsDto: UsersPageOptionsDto,
   ): Promise<PageDto<UserDto>> {
-    return this.userService.getUsers(pageOptionsDto);
+    return this.userService.getUsers(pageOptionsDto, {
+      isPublic: true,
+    });
   }
 
   @Get(':id')
@@ -70,7 +72,9 @@ export class UserController {
   @Auth([RoleType.USER])
   @ResponseData(UserDto)
   getUser(@Query('id') id: number): Promise<UserDto> {
-    return this.userService.getUser(id);
+    return this.userService.getUser(id, {
+      isPublic: true,
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

@@ -17,7 +17,7 @@ import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import type { UserRegisterDto } from '../auth/dto/user-register.dto';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
-import type { UserDto } from './dto/user-dto';
+import type { UserDto, UserDtoOptions } from './dto/user-dto';
 import { UserPicDto } from './dto/UserPicDto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import type { UserEntity } from './user.entity';
@@ -100,14 +100,15 @@ export class UserService {
 
   async getUsers(
     pageOptionsDto: UsersPageOptionsDto,
+    dtoOptions?: UserDtoOptions,
   ): Promise<PageDto<UserDto>> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
     const [items, pageMetaDto] = await queryBuilder.paginate(pageOptionsDto);
 
-    return items.toPageDto(pageMetaDto);
+    return items.toPageDto(pageMetaDto, dtoOptions);
   }
 
-  async getUser(id: number): Promise<UserDto> {
+  async getUser(id: number, dtoOptions?: UserDtoOptions): Promise<UserDto> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     queryBuilder.where('user.id = :id', { id });
@@ -118,7 +119,7 @@ export class UserService {
       throw new UserNotFoundException();
     }
 
-    return userEntity.toDto();
+    return userEntity.toDto(dtoOptions);
   }
 
   async uploadUserPic(id: number, file: IFile): Promise<UserPicDto> {

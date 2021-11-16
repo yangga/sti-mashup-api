@@ -28,6 +28,6 @@ export class UserDto extends AbstractDto {
     this.role = user.role;
     this.email = options?.isPublic ? undefined : user.email;
     this.avatar = user.avatar;
-    this.isActive = options?.isActive || user.deleted ? false : undefined;
+    this.isActive = options?.isActive || (user.deleted ? false : undefined);
   }
 }

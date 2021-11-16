@@ -36,6 +36,9 @@ export class TokenModel extends Table implements IToken {
   @Decorator.Attribute({ name: 'ttl' })
   public ttl: number;
 
+  @Decorator.Attribute({ name: 'seq' })
+  public seq: number;
+
   @Decorator.Attribute({ name: 'data' })
   public data: unknown;
 

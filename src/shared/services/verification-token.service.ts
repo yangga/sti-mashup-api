@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import { TooManyVerificationException } from '../../exceptions/too-many-retry-verification.exception';
 import type { VerificationTokenDto } from '../dto/verification-token.dto';
 import type { IToken } from '../models/action-code.model';
 import { TokenModel } from '../models/action-code.model';
+import { ApiConfigService } from './api-config.service';
 import { GeneratorService } from './generator.service';
 
 export type Code = string;
@@ -17,7 +19,10 @@ export enum SourceType {
 
 @Injectable()
 export class VerificationTokenService {
-  constructor(private readonly generatorService: GeneratorService) {}
+  constructor(
+    private readonly configService: ApiConfigService,
+    private readonly generatorService: GeneratorService,
+  ) {}
 
   async createToken(
     action: ActionType,
@@ -44,9 +49,15 @@ export class VerificationTokenService {
       doc.code = code;
       doc.action = action;
       doc.source = source;
+      doc.seq = 0;
       doc.data = data;
     }
 
+    if (doc.seq >= this.configService.verificationTokenRetryMax) {
+      throw new TooManyVerificationException();
+    }
+
+    doc.seq++;
     doc.ttl = ttl;
 
     await doc.save();

@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import { TokenType } from '../../common/constants/token-type';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
-import { UserWithdrawalException } from '../../exceptions/user-withdrawal.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
 import type { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { ApiConfigService } from '../../shared/services/api-config.service';
@@ -43,11 +42,7 @@ export class AuthService {
       email: toAddress,
     });
 
-    if (oldUser) {
-      if (oldUser.deleted) {
-        throw new UserWithdrawalException();
-      }
-
+    if (oldUser && !oldUser.deleted) {
       throw new EmailAlreadyUsedException();
     }
 

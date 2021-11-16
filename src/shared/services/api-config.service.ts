@@ -48,6 +48,10 @@ export class ApiConfigService {
     return 30;
   }
 
+  get verificationTokenRetryMax(): number {
+    return 5;
+  }
+
   private getNumber(key: string): number {
     const value = this.get(key);
 

@@ -7,6 +7,7 @@ import type { FindConditions } from 'typeorm';
 import type { PageDto } from '../../common/dto/page.dto';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { FileNotImageException } from '../../exceptions/file-not-image.exception';
+import { UsernameAlreadyUsedException } from '../../exceptions/username-already-used.exception';
 import type { IFile } from '../../interfaces';
 import { UtilsProvider } from '../../providers/utils.provider';
 import {
@@ -65,17 +66,30 @@ export class UserService {
     userRegisterDto: UserRegisterDto,
     { email }: { email: string },
   ): Promise<UserEntity> {
-    const oldUser = await this.findByUsernameOrEmail({
+    const oldUserByUsername = await this.findByUsernameOrEmail({
       username: userRegisterDto.username,
+    });
+
+    if (oldUserByUsername && oldUserByUsername.email !== email) {
+      throw new UsernameAlreadyUsedException();
+    }
+
+    const oldUserByEmail = await this.findByUsernameOrEmail({
       email,
     });
 
-    if (oldUser) {
+    if (oldUserByEmail && !oldUserByEmail.deleted) {
       throw new EmailAlreadyUsedException();
     }
 
-    const user = this.userRepository.create(userRegisterDto);
+    const user = oldUserByEmail
+      ? oldUserByEmail
+      : this.userRepository.create(userRegisterDto);
+
+    user.username = userRegisterDto.username;
+    user.password = userRegisterDto.password;
     user.email = email;
+    user.deleted = false;
 
     return this.userRepository.save(user);
   }

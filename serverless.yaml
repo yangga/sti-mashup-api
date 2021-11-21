@@ -68,35 +68,35 @@ resources:
     ######################################################################################
     # Dynamo DB
     ######################################################################################
-    STITokenTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: STIToken.${sls:stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: code
-            AttributeType: S
-          - AttributeName: action
-            AttributeType: S
-          - AttributeName: source
-            AttributeType: S          
-        KeySchema:
-          - AttributeName: code
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: ActionIndex
-            KeySchema:
-              - AttributeName: action
-                KeyType: HASH
-              - AttributeName: source
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-        TimeToLiveSpecification: 
-          AttributeName: ttl
-          Enabled: true
-        Tags:
-          - Key: PROJECT
-            Value: sti
-          - Key: STAGE
-            Value: ${sls:stage}
+    # STITokenTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: STIToken.${sls:stage}
+    #     BillingMode: PAY_PER_REQUEST
+    #     AttributeDefinitions:
+    #       - AttributeName: code
+    #         AttributeType: S
+    #       - AttributeName: action
+    #         AttributeType: S
+    #       - AttributeName: source
+    #         AttributeType: S          
+    #     KeySchema:
+    #       - AttributeName: code
+    #         KeyType: HASH
+    #     GlobalSecondaryIndexes:
+    #       - IndexName: ActionIndex
+    #         KeySchema:
+    #           - AttributeName: action
+    #             KeyType: HASH
+    #           - AttributeName: source
+    #             KeyType: RANGE
+    #         Projection:
+    #           ProjectionType: ALL
+    #     TimeToLiveSpecification: 
+    #       AttributeName: ttl
+    #       Enabled: true
+    #     Tags:
+    #       - Key: PROJECT
+    #         Value: sti
+    #       - Key: STAGE
+    #         Value: ${sls:stage}

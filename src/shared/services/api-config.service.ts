@@ -41,7 +41,7 @@ export class ApiConfigService {
   }
 
   get emailSqsUrl(): string {
-    return `https://sqs.${this.awsConfig.region}.amazonaws.com/${this.awsConfig.accountId}/STIEmailQueue-${this.stage}.fifo`;
+    return `https://sqs.${this.awsConfig.region}.amazonaws.com/${this.awsConfig.accountId}/sti-email-queue-${this.stage}.fifo`;
   }
 
   get emailVerificationTimeoutMin(): number {

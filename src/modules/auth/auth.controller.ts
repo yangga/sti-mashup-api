@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
   Post,
+  Put,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -28,9 +29,11 @@ import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/login-payload.dto';
+import { UserForgotPasswordDto } from './dto/user-forgotpassword.dto';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserQuitDto } from './dto/user-quit.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
+import { UserResetPasswordDto } from './dto/user-resetpassword.dto';
 import {
   VerifyEmailConfirmDto,
   VerifyEmailReqDto,
@@ -60,7 +63,7 @@ export class AuthController {
     @RequestHeader(CommonHeaderDto) header: CommonHeaderDto,
     @Body() body: VerifyEmailReqDto,
   ): Promise<void> {
-    await this.authService.emailVerification(body.email, header.locale);
+    await this.authService.emailSignupVerification(body.email, header.locale);
   }
 
   @Post('verify/email/confirm')
@@ -85,25 +88,25 @@ export class AuthController {
     description: '가입',
   })
   @ResponseData(UserDto)
-  async userRegister(
-    @Body() userRegisterDto: UserRegisterDto,
-  ): Promise<UserDto> {
-    const { registerCode } = userRegisterDto;
+  async userRegister(@Body() body: UserRegisterDto): Promise<UserDto> {
+    const { verificationCode } = body;
 
-    const verfication = await this.authService.getEmailVerification({
-      code: registerCode,
+    const verfication = await this.authService.getSignupEmailVerification({
+      code: verificationCode,
     });
 
     if (!verfication) {
       throw new TokenNotFoundException();
     }
 
-    const createdUser = await this.userService.createUser(userRegisterDto, {
+    const createdUser = await this.userService.createUser(body, {
       email: verfication.email,
     });
 
     try {
-      await this.authService.expireEmailVerification({ code: registerCode });
+      await this.authService.expireEmailVerification({
+        code: verificationCode,
+      });
     } catch (error) {
       this.logger.log(error);
     }
@@ -119,10 +122,8 @@ export class AuthController {
     description: 'User info with access token',
   })
   @ResponseData(LoginPayloadDto)
-  async userLogin(
-    @Body() userLoginDto: UserLoginDto,
-  ): Promise<LoginPayloadDto> {
-    const userEntity = await this.authService.validateUser(userLoginDto);
+  async userLogin(@Body() body: UserLoginDto): Promise<LoginPayloadDto> {
+    const userEntity = await this.authService.validateUser(body);
 
     if (
       userEntity.blockUntilAt &&
@@ -138,6 +139,56 @@ export class AuthController {
     const token = await this.authService.createToken(userEntity);
 
     return new LoginPayloadDto(userEntity.toDto(), token);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({
+    summary: '',
+    description: '비밀번호 변경 요청',
+  })
+  @ResponseData()
+  async userRequestResetPassword(
+    @RequestHeader(CommonHeaderDto) header: CommonHeaderDto,
+    @Body() body: UserForgotPasswordDto,
+  ): Promise<void> {
+    await this.authService.emailResetPasswordVerification(
+      body.email,
+      header.locale,
+    );
+  }
+
+  @Put('reset-password')
+  @ApiOperation({
+    summary: '',
+    description: '비밀번호 변경',
+  })
+  @ResponseData(UserDto)
+  async userResetPassword(
+    @Body() body: UserResetPasswordDto,
+  ): Promise<UserDto> {
+    const { email, password, verificationCode } = body;
+
+    const verfication = await this.authService.getResetpwdEmailVerification({
+      code: verificationCode,
+    });
+
+    if (!verfication) {
+      throw new TokenNotFoundException();
+    }
+
+    const user = await this.userService.changePassword(email, password);
+
+    try {
+      await this.authService.expireEmailVerification({
+        code: verificationCode,
+      });
+    } catch (error) {
+      this.logger.log(error);
+    }
+
+    return user.toDto({
+      isActive: true,
+    });
   }
 
   @Delete('quit')

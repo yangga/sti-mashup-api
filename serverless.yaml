@@ -15,7 +15,6 @@ useDotenv: true
 
 plugins:
   - serverless-plugin-log-retention
-  - serverless-plugin-optimize
   - serverless-offline
 
 custom:
@@ -61,42 +60,3 @@ provider:
             - s3:GetObject
             - s3:PutObject
           Resource: 'arn:aws:s3:::sti-data-${sls:stage}/*'
-
-# CloudFormation - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
-resources:
-  Resources:
-    ######################################################################################
-    # Dynamo DB
-    ######################################################################################
-    STITokenTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: STIToken.${sls:stage}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: code
-            AttributeType: S
-          - AttributeName: action
-            AttributeType: S
-          - AttributeName: source
-            AttributeType: S          
-        KeySchema:
-          - AttributeName: code
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: ActionIndex
-            KeySchema:
-              - AttributeName: action
-                KeyType: HASH
-              - AttributeName: source
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-        TimeToLiveSpecification: 
-          AttributeName: ttl
-          Enabled: true
-        Tags:
-          - Key: PROJECT
-            Value: sti
-          - Key: STAGE
-            Value: ${sls:stage}

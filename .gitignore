@@ -81,5 +81,6 @@ db-data
 .cache
 
 .serverless/
+.build/
 
 /test.js

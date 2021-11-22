@@ -8,7 +8,7 @@ export interface IToken {
 }
 
 @Decorator.Table({
-  name: `STIToken.${process.env.STAGE || 'dev'}`,
+  name: `sti-token.${process.env.STAGE || 'dev'}`,
 })
 export class TokenModel extends Table implements IToken {
   @Decorator.HashPrimaryKey('code')

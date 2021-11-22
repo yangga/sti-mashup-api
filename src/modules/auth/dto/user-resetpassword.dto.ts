@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsEmail,
   IsNotEmpty,
   IsString,
   Matches,
@@ -10,13 +11,11 @@ import {
 import { Match } from '../../../decorators/match.decorator';
 import { Trim } from '../../../decorators/transforms.decorator';
 
-export class UserRegisterDto {
-  @ApiProperty()
+export class UserResetPasswordDto {
   @IsString()
-  @MinLength(4)
-  @MaxLength(20)
-  @Trim()
-  readonly username: string;
+  @IsEmail()
+  @ApiProperty()
+  readonly email: string;
 
   @ApiProperty()
   @IsString()

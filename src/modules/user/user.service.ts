@@ -94,6 +94,20 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  async changePassword(email: string, password: string): Promise<UserEntity> {
+    const user = await this.findOne({
+      email,
+    });
+
+    if (!user || user.deleted) {
+      throw new UserNotFoundException();
+    }
+
+    user.password = password;
+
+    return this.userRepository.save(user);
+  }
+
   async withdrawUser(userId: number, userLoginDto: UserQuitDto): Promise<void> {
     const user = await this.findOne({
       id: userId,

@@ -37,7 +37,51 @@ export class AuthService {
     private readonly tokenService: VerificationTokenService,
   ) {}
 
-  async emailVerification(toAddress: string, locale: string): Promise<void> {
+  async emailResetPasswordVerification(
+    toAddress: string,
+    locale: string,
+  ): Promise<void> {
+    const oldUser = await this.userService.findOne({
+      email: toAddress,
+    });
+
+    if (!oldUser || oldUser.deleted) {
+      throw new UserNotFoundException();
+    }
+
+    const ttl =
+      Math.floor(Date.now() * 0.001) +
+      (this.configService.emailVerificationTimeoutMin + 1) * 60;
+
+    const code = await this.tokenService.createToken(
+      ActionType.RESET_PASSWORD,
+      SourceType.EMAIL,
+      toAddress,
+      ttl,
+      toAddress,
+    );
+
+    const params = new URLSearchParams();
+    params.append('code', code);
+    params.append('source', SourceType.EMAIL);
+
+    const actionUrl = `${
+      this.configService.webPageUrl
+    }/resetpwd-verified?${params.toString()}`;
+
+    const template = `verify-email-resetpwd_${locale}_${this.configService.stage}`;
+
+    return this.emailVerification({
+      toAddress,
+      actionUrl,
+      template,
+    });
+  }
+
+  async emailSignupVerification(
+    toAddress: string,
+    locale: string,
+  ): Promise<void> {
     const oldUser = await this.userService.findOne({
       email: toAddress,
     });
@@ -60,13 +104,31 @@ export class AuthService {
 
     const params = new URLSearchParams();
     params.append('code', code);
+    params.append('source', SourceType.EMAIL);
 
     const actionUrl = `${
       this.configService.webPageUrl
-    }/verify-email?${params.toString()}`;
+    }/join-verified?${params.toString()}`;
 
+    const template = `verify-email-join_${locale}_${this.configService.stage}`;
+
+    return this.emailVerification({
+      toAddress,
+      actionUrl,
+      template,
+    });
+  }
+
+  private async emailVerification({
+    toAddress,
+    actionUrl,
+    template,
+  }: {
+    toAddress: string;
+    actionUrl: string;
+    template: string;
+  }): Promise<void> {
     const source = this.configService.emailAddrNoreply;
-    const template = `verify-email_${locale}_${this.configService.stage}`;
 
     const emailParam: IEmailPayload = {
       destination: {
@@ -94,7 +156,30 @@ export class AuthService {
     return this.tokenService.extendToken(code, ttl);
   }
 
-  async getEmailVerification({ code }: { code: string }): Promise<{
+  async getResetpwdEmailVerification({ code }: { code: string }): Promise<{
+    code: string;
+    email: string;
+  }> {
+    return this.getEmailVerification({
+      code,
+      action: ActionType.RESET_PASSWORD,
+    });
+  }
+
+  async getSignupEmailVerification({ code }: { code: string }): Promise<{
+    code: string;
+    email: string;
+  }> {
+    return this.getEmailVerification({ code, action: ActionType.SIGNUP });
+  }
+
+  private async getEmailVerification({
+    code,
+    action,
+  }: {
+    code: string;
+    action: ActionType;
+  }): Promise<{
     code: string;
     email: string;
   }> {
@@ -104,7 +189,7 @@ export class AuthService {
       throw new TokenNotFoundException();
     }
 
-    if (res.action !== ActionType.SIGNUP) {
+    if (res.action !== action) {
       throw new InternalServerErrorException();
     }
 

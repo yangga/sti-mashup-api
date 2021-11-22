@@ -11,6 +11,7 @@ export type Code = string;
 
 export enum ActionType {
   SIGNUP = 'signup',
+  RESET_PASSWORD = 'reset-pwd',
 }
 
 export enum SourceType {

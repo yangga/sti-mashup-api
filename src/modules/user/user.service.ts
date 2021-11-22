@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
 import type { UserQuitDto } from 'modules/auth/dto/user-quit.dto';
 import sharp from 'sharp';
@@ -19,7 +19,7 @@ import type { Optional } from '../../types';
 import type { UserRegisterDto } from '../auth/dto/user-register.dto';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { UserDto, UserDtoOptions } from './dto/user-dto';
-import { UserPicDto } from './dto/UserPicDto';
+import { UserPicDto } from './dto/user-pic.dto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import type { UserEntity } from './user.entity';
 import { UserRepository } from './user.repository';
@@ -201,5 +201,27 @@ export class UserService {
     }
 
     return new UserPicDto(id, user.avatar);
+  }
+
+  async delUserPic(id: number): Promise<void> {
+    const user = await this.findOne({
+      id,
+    });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    if (!user.avatar) {
+      throw new NotFoundException();
+    }
+
+    const key = user.avatar;
+
+    // eslint-disable-next-line unicorn/no-null
+    user.avatar = null;
+    await this.userRepository.save(user);
+
+    await this.awsS3Service.delete(key);
   }
 }

@@ -24,19 +24,20 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @Column({ nullable: false })
   password: string;
 
-  @Column({ nullable: true })
-  avatar?: string;
+  // nullable: true 은 type 정의가 꼭 필요함.
+  @Column({ type: 'varchar', nullable: true })
+  avatar?: string | null;
 
   @Column({
     type: 'timestamp',
     nullable: true,
   })
-  blockUntilAt?: Date;
+  blockUntilAt?: Date | null;
 
   @Column({
     type: 'bit',
     transformer: new BoolBitTransformer(),
     nullable: true,
   })
-  deleted: boolean;
+  deleted?: boolean;
 }

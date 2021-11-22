@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpStatus,
   Logger,
   Post,
@@ -203,12 +202,5 @@ export class AuthController {
     @Body() userLoginDto: UserQuitDto,
   ): Promise<void> {
     await this.userService.withdrawUser(user.id, userLoginDto);
-  }
-
-  @Get('me')
-  @Auth([RoleType.USER])
-  @ResponseData(UserDto)
-  getCurrentUser(@AuthUser() user: UserEntity): UserDto {
-    return user.toDto();
   }
 }

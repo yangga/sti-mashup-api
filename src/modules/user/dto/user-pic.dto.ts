@@ -13,8 +13,8 @@ export class UserPicDto {
   @Trim()
   readonly imgUrl?: string;
 
-  constructor(id: number, imgUrl?: string) {
+  constructor(id: number, imgUrl?: string | null) {
     this.id = id;
-    this.imgUrl = imgUrl;
+    this.imgUrl = imgUrl ? imgUrl : undefined;
   }
 }

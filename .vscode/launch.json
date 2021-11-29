@@ -16,13 +16,7 @@
         "<node_internals>/**/*.js"
       ],
       "port": 7777,
-      "console": "integratedTerminal",
-      "env": {
-        "AWS_ACCESS_KEY_ID": "AKIA4QQSHAMQBLXRSPNZ",
-        "AWS_SECRET_ACCESS_KEY": "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",
-        "AWS_REGION": "ap-northeast-2",
-        "STAGE": "dev"
-      }
+      "console": "integratedTerminal"
     }
   ]
 }

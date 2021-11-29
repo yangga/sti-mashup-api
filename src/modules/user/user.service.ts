@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
+import _ from 'lodash';
 import type { UserQuitDto } from 'modules/auth/dto/user-quit.dto';
 import sharp from 'sharp';
 import type { FindConditions } from 'typeorm';
@@ -17,6 +18,7 @@ import {
 import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import type { UserRegisterDto } from '../auth/dto/user-register.dto';
+import { SearchService } from '../search/services/search.service';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { UserDto, UserDtoOptions } from './dto/user-dto';
 import { UserPicDto } from './dto/user-pic.dto';
@@ -30,9 +32,10 @@ export class UserService {
 
   constructor(
     @InjectSentry() private readonly sentry: SentryService,
-    public readonly userRepository: UserRepository,
-    public readonly validatorService: ValidatorService,
-    public readonly awsS3Service: AwsS3Service,
+    private readonly userRepository: UserRepository,
+    private readonly validatorService: ValidatorService,
+    private readonly awsS3Service: AwsS3Service,
+    private readonly searchService: SearchService,
   ) {}
 
   /**
@@ -91,7 +94,11 @@ export class UserService {
     user.email = email;
     user.deleted = false;
 
-    return this.userRepository.save(user);
+    const createdUser = await this.userRepository.save(user);
+
+    await this._streamToES(createdUser);
+
+    return createdUser;
   }
 
   async changePassword(email: string, password: string): Promise<UserEntity> {
@@ -104,6 +111,8 @@ export class UserService {
     }
 
     user.password = password;
+
+    await this._streamToES(user);
 
     return this.userRepository.save(user);
   }
@@ -124,6 +133,8 @@ export class UserService {
 
     user.deleted = true;
     await this.userRepository.save(user);
+
+    await this._streamToES(user);
   }
 
   async getUsers(
@@ -200,6 +211,8 @@ export class UserService {
       throw res[0].reason;
     }
 
+    await this._streamToES(user);
+
     return new UserPicDto(id, user.avatar);
   }
 
@@ -223,5 +236,12 @@ export class UserService {
     await this.userRepository.save(user);
 
     await this.awsS3Service.delete(key);
+
+    await this._streamToES(user);
+  }
+
+  // TODO: 나중에 stream으로 처리. RDS에 데이터 업데이트되면 > lambda 호출 후 ES 적재로 처리하기
+  async _streamToES(doc: UserEntity): Promise<void> {
+    await this.searchService.updateUser(doc);
   }
 }

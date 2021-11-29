@@ -139,6 +139,12 @@ export class ApiConfigService {
     };
   }
 
+  get esConfig() {
+    return {
+      url: this.getString('ELASTICSEARCH_URL'),
+    };
+  }
+
   get awsConfig() {
     return {
       region: this.getString('AWS_REGION'),

@@ -23,7 +23,7 @@ import { TokenNotFoundException } from '../../exceptions/token-not-found.excepti
 import { UserBlockedException } from '../../exceptions/user-blocked.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
-import { UserDto } from '../user/dto/user-dto';
+import { UserDto } from '../user/dto/user.dto';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';

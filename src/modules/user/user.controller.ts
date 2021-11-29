@@ -15,7 +15,7 @@ import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
 import { TranslationService } from '../../shared/services/translation.service';
-import { UserDto } from './dto/user-dto';
+import { UserDto } from './dto/user.dto';
 import { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';

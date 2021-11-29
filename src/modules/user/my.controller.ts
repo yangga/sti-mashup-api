@@ -8,7 +8,7 @@ import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
 import { ApiFile } from '../../decorators/swagger.schema';
 import { IFile } from '../../interfaces';
-import { UserDto } from './dto/user-dto';
+import { UserDto } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';

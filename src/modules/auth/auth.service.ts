@@ -18,7 +18,7 @@ import {
   SourceType,
   VerificationTokenService,
 } from '../../shared/services/verification-token.service';
-import type { UserDto } from '../user/dto/user-dto';
+import type { UserDto } from '../user/dto/user.dto';
 import type { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { TokenNotFoundException } from './../../exceptions/token-not-found.exception';

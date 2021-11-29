@@ -4,8 +4,8 @@ import { AbstractEntity } from '../../common/abstract.entity';
 import { RoleType } from '../../common/constants/role-type';
 import { UseDto } from '../../decorators/use-dto.decorator';
 import { BoolBitTransformer } from '../../value-transformers/bool-bit.transformer';
-import type { UserDtoOptions } from './dto/user-dto';
-import { UserDto } from './dto/user-dto';
+import type { UserDtoOptions } from './dto/user.dto';
+import { UserDto } from './dto/user.dto';
 
 @Entity({ name: 'users' })
 @UseDto(UserDto)

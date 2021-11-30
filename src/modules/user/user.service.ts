@@ -18,7 +18,7 @@ import {
 import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import type { UserRegisterDto } from '../auth/dto/user-register.dto';
-import { SearchService } from '../search/services/search.service';
+import { SearchService } from '../search/search.service';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { UserDto, UserDtoOptions } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
@@ -242,6 +242,6 @@ export class UserService {
 
   // TODO: 나중에 stream으로 처리. RDS에 데이터 업데이트되면 > lambda 호출 후 ES 적재로 처리하기
   async _streamToES(doc: UserEntity): Promise<void> {
-    await this.searchService.putUser(doc);
+    await this.searchService.putUser(doc.toDto());
   }
 }

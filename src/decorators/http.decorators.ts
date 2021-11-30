@@ -10,7 +10,7 @@ import {
 import type { Type } from '@nestjs/common/interfaces';
 import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
-import type { RoleType } from '../common/constants/role-type';
+import { RoleType } from '../common/constants/role-type';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { AuthUserInterceptor } from '../interceptors/auth-user-interceptor.service';
@@ -23,7 +23,10 @@ export function Auth(
   const isPublicRoute = options?.public;
 
   return applyDecorators(
-    SetMetadata('roles', roles),
+    SetMetadata(
+      'roles',
+      roles.includes(RoleType.ADMIN) ? roles : [...roles, RoleType.ADMIN],
+    ),
     UseGuards(AuthGuard({ public: isPublicRoute }), RolesGuard),
     ApiBearerAuth(),
     UseInterceptors(AuthUserInterceptor),

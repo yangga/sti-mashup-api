@@ -22,6 +22,7 @@ import { SearchService } from '../search/search.service';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { UserDto, UserDtoOptions } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
+import type { UserProfileRequestDto } from './dto/user-profile-request.dto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import type { UserEntity } from './user.entity';
 import { UserRepository } from './user.repository';
@@ -159,6 +160,40 @@ export class UserService {
     }
 
     return userEntity.toDto(dtoOptions);
+  }
+
+  async updateUserProfile(
+    id: number,
+    body: UserProfileRequestDto,
+  ): Promise<UserDto> {
+    const user = await this.findOne({
+      id,
+    });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    const fields = _.keys(body);
+    let isUpdated = false;
+
+    for (const field of fields) {
+      if (!body[field]) {
+        continue;
+      }
+
+      user[field] = _.map(body[field], (e) =>
+        typeof e === 'string' ? e.toUpperCase() : e,
+      );
+      isUpdated = true;
+    }
+
+    if (isUpdated) {
+      await this.userRepository.save(user);
+      await this._streamToES(user);
+    }
+
+    return user.toDto();
   }
 
   async uploadUserPic(id: number, file: IFile): Promise<UserPicDto> {

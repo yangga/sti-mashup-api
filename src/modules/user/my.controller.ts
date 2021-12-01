@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Post, UploadedFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Put,
+  UploadedFile,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role-type';
@@ -10,6 +18,7 @@ import { ApiFile } from '../../decorators/swagger.schema';
 import { IFile } from '../../interfaces';
 import { UserDto } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
+import { UserProfileRequestDto } from './dto/user-profile-request.dto';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
 
@@ -26,8 +35,18 @@ export class MyController {
     return user.toDto();
   }
 
+  @Patch('profile')
+  @ResponseData(UserDto)
+  @Auth([RoleType.USER])
+  async updateUserProfile(
+    @AuthUser() user: UserEntity,
+    @Body() body: UserProfileRequestDto,
+  ): Promise<UserPicDto> {
+    return this.userService.updateUserProfile(user.id, body);
+  }
+
   // eslint-disable-next-line @typescript-eslint/require-await
-  @Post('pic')
+  @Put('pic')
   @ResponseData(UserPicDto)
   @Auth([RoleType.USER])
   @ApiFile({ name: 'avatar' }, { isRequired: true })

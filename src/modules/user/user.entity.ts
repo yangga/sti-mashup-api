@@ -40,6 +40,18 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   })
   level: number;
 
+  @Column({ type: 'simple-array' })
+  languages?: string[];
+
+  @Column({ type: 'simple-array' })
+  positions?: string[];
+
+  @Column({ type: 'simple-array' })
+  interesting?: string[];
+
+  @Column({ type: 'simple-array' })
+  skills?: string[];
+
   @Column({
     type: 'timestamp',
     nullable: true,

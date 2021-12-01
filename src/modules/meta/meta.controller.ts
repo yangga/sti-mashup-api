@@ -14,6 +14,7 @@ import { RoleType } from '../../common/constants/role-type';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
+import LocaleCodes from '../../i18n/locale-short-codes.json';
 import type { SearchWordDto } from '../search/dto/searchword.dto';
 import {
   SearchWordCreateDto,
@@ -27,6 +28,16 @@ import { SearchService } from '../search/search.service';
 @ApiTags('meta')
 export class MetaController {
   constructor(private searchService: SearchService) {}
+
+  @Get('/languages')
+  @ApiOperation({
+    summary: '',
+    description: 'Get all language list',
+  })
+  @ResponseData(SearchWordsDto)
+  getLanguages(): string[] {
+    return LocaleCodes;
+  }
 
   @Delete('positions')
   @ApiOperation({

@@ -112,6 +112,7 @@ export class UserService {
     }
 
     user.password = password;
+    user.passwordChangedAt = new Date();
 
     await this._streamToES(user);
 

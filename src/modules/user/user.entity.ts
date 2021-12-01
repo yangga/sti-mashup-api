@@ -24,6 +24,13 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @Column({ nullable: false })
   password: string;
 
+  @Column({
+    type: 'timestamp',
+    nullable: false,
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  passwordChangedAt: Date;
+
   // nullable: true 은 type 정의가 꼭 필요함.
   @Column({ type: 'varchar', nullable: true })
   avatar?: string | null;

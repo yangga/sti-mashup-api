@@ -23,9 +23,11 @@ import { UserNotFoundException } from './../../exceptions/user-not-found.excepti
 import type { UserDto, UserDtoOptions } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
 import type { UserProfileRequestDto } from './dto/user-profile-request.dto';
+import type { UserSettingsDto } from './dto/user-settings.dto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
+import { UserRepository } from './repositories/user.repository';
+import { UserSettingsRepository } from './repositories/user-settings.repository';
 import type { UserEntity } from './user.entity';
-import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
@@ -34,6 +36,7 @@ export class UserService {
   constructor(
     @InjectSentry() private readonly sentry: SentryService,
     private readonly userRepository: UserRepository,
+    private readonly userSettingsRepository: UserSettingsRepository,
     private readonly validatorService: ValidatorService,
     private readonly awsS3Service: AwsS3Service,
     private readonly searchService: SearchService,
@@ -274,6 +277,36 @@ export class UserService {
     await this.awsS3Service.delete(key);
 
     await this._streamToES(user);
+  }
+
+  async updateUserSettings(
+    id: number,
+    settings: UserSettingsDto,
+  ): Promise<UserSettingsDto> {
+    const user = await this.findOne({
+      id,
+    });
+
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+
+    const userSettings =
+      (await user.settings) ||
+      this.userSettingsRepository.create({ id: user.id });
+
+    for (const key of _.keys(settings)) {
+      if (!_.isUndefined(settings[key])) {
+        userSettings[key] = settings[key];
+      }
+    }
+
+    await this.userSettingsRepository.save(userSettings);
+
+    user.settings = Promise.resolve(userSettings);
+    await this.userRepository.save(user);
+
+    return userSettings.toDto();
   }
 
   // TODO: 나중에 stream으로 처리. RDS에 데이터 업데이트되면 > lambda 호출 후 ES 적재로 처리하기

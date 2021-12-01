@@ -19,6 +19,7 @@ import { IFile } from '../../interfaces';
 import { UserDto } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
 import { UserProfileRequestDto } from './dto/user-profile-request.dto';
+import { UserSettingsDto } from './dto/user-settings.dto';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
 
@@ -63,5 +64,30 @@ export class MyController {
   @Auth([RoleType.USER])
   async deleteUserPic(@AuthUser() user: UserEntity): Promise<void> {
     await this.userService.delUserPic(user.id);
+  }
+
+  @Get('settings')
+  @ResponseData(UserSettingsDto)
+  @Auth([RoleType.USER])
+  async getUserSettings(
+    @AuthUser() user: UserEntity,
+  ): Promise<UserSettingsDto> {
+    const settings = await user.settings;
+
+    if (!settings) {
+      return {};
+    }
+
+    return settings.toDto();
+  }
+
+  @Patch('settings')
+  @ResponseData(UserSettingsDto)
+  @Auth([RoleType.USER])
+  async updateUserSettings(
+    @AuthUser() user: UserEntity,
+    @Body() body: UserSettingsDto,
+  ): Promise<UserSettingsDto> {
+    return this.userService.updateUserSettings(user.id, body);
   }
 }

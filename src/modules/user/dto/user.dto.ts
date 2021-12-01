@@ -19,6 +19,9 @@ export class UserDto extends AbstractDto {
   @ApiPropertyOptional()
   avatar?: string;
 
+  @ApiProperty()
+  level: number;
+
   @ApiPropertyOptional()
   isActive?: boolean;
 
@@ -28,6 +31,7 @@ export class UserDto extends AbstractDto {
     this.role = user.role;
     this.email = options?.isPublic ? undefined : user.email;
     this.avatar = user.avatar ? user.avatar : undefined;
+    this.level = user.level;
     this.isActive = options?.isActive || (user.deleted ? false : undefined);
   }
 }

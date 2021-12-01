@@ -29,6 +29,18 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   avatar?: string | null;
 
   @Column({
+    type: 'integer',
+    unsigned: true,
+    nullable: false,
+    default: 1,
+    transformer: {
+      to: (v: unknown) => v,
+      from: (v: string) => Number.parseInt(v || '0', 10),
+    },
+  })
+  level: number;
+
+  @Column({
     type: 'timestamp',
     nullable: true,
   })

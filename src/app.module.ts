@@ -4,6 +4,7 @@ import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphqlInterceptor, SentryModule } from '@ntegral/nestjs-sentry';
 import { LogLevel } from '@sentry/types';
@@ -16,9 +17,9 @@ import path from 'path';
 import { contextMiddleware } from './middlewares';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
+import { MetaModule } from './modules/meta/meta.module';
 import { PostModule } from './modules/post/post.module';
 import { SearchModule } from './modules/search/search.module';
-import { TagModule } from './modules/tag/tag.module';
 import { UserModule } from './modules/user/user.module';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
@@ -41,7 +42,7 @@ const STAGE = process.env.STAGE;
     UserModule,
     PostModule,
     SearchModule,
-    TagModule,
+    MetaModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
@@ -86,6 +87,7 @@ const STAGE = process.env.STAGE;
         },
       ],
     }),
+    ScheduleModule.forRoot(),
   ],
   providers: [
     {

@@ -48,7 +48,7 @@ export class UserController {
     summary: '',
     description: 'Get users list',
   })
-  @Auth([RoleType.USER])
+  @Auth([RoleType.ADMIN])
   @ResponseData(PageDto)
   getUsers(
     @Query(new ValidationPipe({ transform: true }))

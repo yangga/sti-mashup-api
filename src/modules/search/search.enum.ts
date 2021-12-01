@@ -1,4 +1,7 @@
 export enum SearchWordType {
-  TAG = 'TAG',
   ETC = 'ETC',
+  POSITION = 'POS',
+  PROJECT = 'PRJ',
+  SKILL = 'SKL',
+  TAG = 'TAG',
 }

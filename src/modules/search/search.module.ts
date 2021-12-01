@@ -4,13 +4,18 @@ import { ElasticsearchModule } from '@nestjs/elasticsearch';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ApiConfigService } from '../../shared/services/api-config.service';
+import { SearchWordRepository } from './repositories/searchword.repository';
+import { SearchWordDeletedRepository } from './repositories/searchword-deleted.repository';
+import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
-import { SearchWordRepository } from './searchword.repository';
 
 @Global()
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SearchWordRepository]),
+    TypeOrmModule.forFeature([
+      SearchWordRepository,
+      SearchWordDeletedRepository,
+    ]),
     ElasticsearchModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ApiConfigService) => ({
@@ -19,6 +24,7 @@ import { SearchWordRepository } from './searchword.repository';
       inject: [ApiConfigService],
     }),
   ],
+  controllers: [SearchController],
   providers: [SearchService],
   exports: [SearchService],
 })

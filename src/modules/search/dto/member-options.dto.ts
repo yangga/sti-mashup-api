@@ -9,12 +9,8 @@ import {
   IsString,
 } from 'class-validator';
 
+import { Order } from '../../../common/constants/order';
 import { PaginatedRequestDto } from './paginated-request.dto';
-
-export enum SortDirection {
-  ASC = 'asc',
-  DESC = 'desc',
-}
 
 export enum SortableField {
   LEVEL = 'level',
@@ -112,8 +108,8 @@ export class MemberOptionsDto extends PaginatedRequestDto {
   @IsOptional()
   readonly sortKey?: SortableField;
 
-  @ApiPropertyOptional({ enum: SortDirection })
-  @IsEnum(SortDirection)
+  @ApiPropertyOptional({ enum: Order })
+  @IsEnum(Order)
   @IsOptional()
-  readonly sortDirection?: SortDirection;
+  readonly sortDirection?: Order;
 }

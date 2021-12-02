@@ -14,7 +14,6 @@ import { ApiConfigService } from '../../shared/services/api-config.service';
 import type { IEmailPayload } from '../../shared/services/email.service';
 import { EmailService } from '../../shared/services/email.service';
 import {
-  ActionType,
   SourceType,
   VerificationTokenService,
 } from '../../shared/services/verification-token.service';
@@ -54,7 +53,7 @@ export class AuthService {
       (this.configService.emailVerificationTimeoutMin + 1) * 60;
 
     const code = await this.tokenService.createToken(
-      ActionType.RESET_PASSWORD,
+      TokenType.RESET_PASSWORD,
       SourceType.EMAIL,
       toAddress,
       ttl,
@@ -95,7 +94,7 @@ export class AuthService {
       (this.configService.emailVerificationTimeoutMin + 1) * 60;
 
     const code = await this.tokenService.createToken(
-      ActionType.SIGNUP,
+      TokenType.SIGNUP,
       SourceType.EMAIL,
       toAddress,
       ttl,
@@ -162,7 +161,7 @@ export class AuthService {
   }> {
     return this.getEmailVerification({
       code,
-      action: ActionType.RESET_PASSWORD,
+      action: TokenType.RESET_PASSWORD,
     });
   }
 
@@ -170,7 +169,7 @@ export class AuthService {
     code: string;
     email: string;
   }> {
-    return this.getEmailVerification({ code, action: ActionType.SIGNUP });
+    return this.getEmailVerification({ code, action: TokenType.SIGNUP });
   }
 
   private async getEmailVerification({
@@ -178,7 +177,7 @@ export class AuthService {
     action,
   }: {
     code: string;
-    action: ActionType;
+    action: TokenType;
   }): Promise<{
     code: string;
     email: string;

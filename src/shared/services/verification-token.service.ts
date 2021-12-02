@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
+import type { TokenType } from '../../common/constants/token-type';
 import { TooManyVerificationException } from '../../exceptions/too-many-retry-verification.exception';
 import type { VerificationTokenDto } from '../dto/verification-token.dto';
 import type { IToken } from '../models/action-code.model';
@@ -8,11 +9,6 @@ import { ApiConfigService } from './api-config.service';
 import { GeneratorService } from './generator.service';
 
 export type Code = string;
-
-export enum ActionType {
-  SIGNUP = 'signup',
-  RESET_PASSWORD = 'reset-pwd',
-}
 
 export enum SourceType {
   EMAIL = 'email',
@@ -26,7 +22,7 @@ export class VerificationTokenService {
   ) {}
 
   async createToken(
-    action: ActionType,
+    action: TokenType,
     sourceType: SourceType,
     sourceData: string,
     ttl: number,

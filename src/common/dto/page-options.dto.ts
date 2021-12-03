@@ -10,16 +10,16 @@ import {
   Min,
 } from 'class-validator';
 
-import { Order } from '../constants/order';
+import { OrderType } from '../constants/order.type';
 
 export class PageOptionsDto {
   @ApiPropertyOptional({
-    enum: Order,
-    default: Order.ASC,
+    enum: OrderType,
+    default: OrderType.ASC,
   })
-  @IsEnum(Order)
+  @IsEnum(OrderType)
   @IsOptional()
-  readonly order: Order = Order.ASC;
+  readonly order: OrderType = OrderType.ASC;
 
   @ApiPropertyOptional({
     minimum: 1,

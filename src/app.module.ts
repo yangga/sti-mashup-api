@@ -19,6 +19,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
 import { MetaModule } from './modules/meta/meta.module';
 import { PostModule } from './modules/post/post.module';
+import { ProjectModule } from './modules/project/project.module';
 import { SearchModule } from './modules/search/search.module';
 import { UserModule } from './modules/user/user.module';
 import { ApiConfigService } from './shared/services/api-config.service';
@@ -41,6 +42,7 @@ const STAGE = process.env.STAGE;
     AuthModule,
     UserModule,
     PostModule,
+    ProjectModule,
     SearchModule,
     MetaModule,
     ConfigModule.forRoot({

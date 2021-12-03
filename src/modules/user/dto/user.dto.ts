@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
-import { RoleType } from '../../../common/constants/role-type';
+import { RoleType } from '../../../common/constants/role.type';
 import { AbstractDto } from '../../../common/dto/abstract.dto';
-import type { UserEntity } from '../user.entity';
+import type { UserEntity } from '../entities/user.entity';
 
 export type UserDtoOptions = Partial<{ isActive: boolean; isPublic: boolean }>;
 

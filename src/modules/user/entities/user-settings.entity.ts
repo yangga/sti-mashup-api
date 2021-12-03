@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   Entity,
   Index,
@@ -6,14 +7,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { UseDto } from '../../decorators/use-dto.decorator';
-import { UserDto } from './dto/user.dto';
-import { UserSettingsDto } from './dto/user-settings.dto';
+import { UserSettingsDto } from '../dto/user-settings.dto';
 import { UserEntity } from './user.entity';
 
 @Entity({ name: 'user_settings' })
-@UseDto(UserDto)
-export class UserSettingsEntity {
+export class UserSettingsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

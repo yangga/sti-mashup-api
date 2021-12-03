@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,7 +11,7 @@ import type { AbstractDto } from './dto/abstract.dto';
 export abstract class AbstractEntity<
   DTO extends AbstractDto = AbstractDto,
   O = never,
-> {
+> extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

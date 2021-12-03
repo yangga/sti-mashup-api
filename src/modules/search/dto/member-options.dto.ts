@@ -9,7 +9,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { Order } from '../../../common/constants/order';
+import { OrderType } from '../../../common/constants/order.type';
 import { PaginatedRequestDto } from './paginated-request.dto';
 
 export enum SortableField {
@@ -108,8 +108,8 @@ export class MemberOptionsDto extends PaginatedRequestDto {
   @IsOptional()
   readonly sortKey?: SortableField;
 
-  @ApiPropertyOptional({ enum: Order })
-  @IsEnum(Order)
+  @ApiPropertyOptional({ enum: OrderType })
+  @IsEnum(OrderType)
   @IsOptional()
-  readonly sortDirection?: Order;
+  readonly sortDirection?: OrderType;
 }

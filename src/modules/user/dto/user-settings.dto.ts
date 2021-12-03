@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsOptional } from 'class-validator';
 
-import type { UserSettingsEntity } from '../user-settings.entity';
+import type { UserSettingsEntity } from '../entities/user-settings.entity';
 
 export class UserSettingsDto {
   @ApiPropertyOptional({ type: Date })

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import type { TokenType } from '../../common/constants/token-type';
+import type { TokenType } from '../../common/constants/token.type';
 import { TooManyVerificationException } from '../../exceptions/too-many-retry-verification.exception';
 import type { VerificationTokenDto } from '../dto/verification-token.dto';
 import type { IToken } from '../models/action-code.model';

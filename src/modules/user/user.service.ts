@@ -4,6 +4,7 @@ import _ from 'lodash';
 import type { UserQuitDto } from 'modules/auth/dto/user-quit.dto';
 import sharp from 'sharp';
 import type { FindConditions } from 'typeorm';
+import { getManager } from 'typeorm';
 
 import type { PageDto } from '../../common/dto/page.dto';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
@@ -25,9 +26,8 @@ import { UserPicDto } from './dto/user-pic.dto';
 import type { UserProfileRequestDto } from './dto/user-profile-request.dto';
 import type { UserSettingsDto } from './dto/user-settings.dto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
-import { UserRepository } from './repositories/user.repository';
-import { UserSettingsRepository } from './repositories/user-settings.repository';
-import type { UserEntity } from './user.entity';
+import { UserEntity } from './entities/user.entity';
+import { UserSettingsEntity } from './entities/user-settings.entity';
 
 @Injectable()
 export class UserService {
@@ -35,8 +35,6 @@ export class UserService {
 
   constructor(
     @InjectSentry() private readonly sentry: SentryService,
-    private readonly userRepository: UserRepository,
-    private readonly userSettingsRepository: UserSettingsRepository,
     private readonly validatorService: ValidatorService,
     private readonly awsS3Service: AwsS3Service,
     private readonly searchService: SearchService,
@@ -46,13 +44,13 @@ export class UserService {
    * Find single user
    */
   findOne(findData: FindConditions<UserEntity>): Promise<Optional<UserEntity>> {
-    return this.userRepository.findOne(findData);
+    return UserEntity.findOne(findData);
   }
 
   async findByUsernameOrEmail(
     options: Partial<{ username: string; email: string }>,
   ): Promise<Optional<UserEntity>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    const queryBuilder = UserEntity.createQueryBuilder('user');
 
     if (options.email) {
       queryBuilder.orWhere('user.email = :email', {
@@ -91,14 +89,14 @@ export class UserService {
 
     const user = oldUserByEmail
       ? oldUserByEmail
-      : this.userRepository.create(userRegisterDto);
+      : UserEntity.create(userRegisterDto);
 
     user.username = userRegisterDto.username;
     user.password = userRegisterDto.password;
     user.email = email;
     user.deleted = false;
 
-    const createdUser = await this.userRepository.save(user);
+    const createdUser = await UserEntity.save(user);
 
     await this._streamToES(createdUser);
 
@@ -119,7 +117,7 @@ export class UserService {
 
     await this._streamToES(user);
 
-    return this.userRepository.save(user);
+    return UserEntity.save(user);
   }
 
   async withdrawUser(userId: number, userLoginDto: UserQuitDto): Promise<void> {
@@ -137,7 +135,7 @@ export class UserService {
     }
 
     user.deleted = true;
-    await this.userRepository.save(user);
+    await UserEntity.save(user);
 
     await this._streamToES(user);
   }
@@ -146,14 +144,14 @@ export class UserService {
     pageOptionsDto: UsersPageOptionsDto,
     dtoOptions?: UserDtoOptions,
   ): Promise<PageDto<UserDto>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    const queryBuilder = UserEntity.createQueryBuilder('user');
     const [items, pageMetaDto] = await queryBuilder.paginate(pageOptionsDto);
 
     return items.toPageDto(pageMetaDto, dtoOptions);
   }
 
   async getUser(id: number, dtoOptions?: UserDtoOptions): Promise<UserDto> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    const queryBuilder = UserEntity.createQueryBuilder('user');
 
     queryBuilder.where('user.id = :id', { id });
 
@@ -193,7 +191,7 @@ export class UserService {
     }
 
     if (isUpdated) {
-      await this.userRepository.save(user);
+      await UserEntity.save(user);
       await this._streamToES(user);
     }
 
@@ -240,7 +238,7 @@ export class UserService {
     };
 
     const res = await Promise.allSettled([
-      executeWrapper(this.userRepository.save(user)),
+      executeWrapper(UserEntity.save(user)),
       executeWrapper(
         oldAvatar ? this.awsS3Service.delete(oldAvatar) : undefined,
       ),
@@ -272,7 +270,7 @@ export class UserService {
 
     // eslint-disable-next-line unicorn/no-null
     user.avatar = null;
-    await this.userRepository.save(user);
+    await UserEntity.save(user);
 
     await this.awsS3Service.delete(key);
 
@@ -292,8 +290,7 @@ export class UserService {
     }
 
     const userSettings =
-      (await user.settings) ||
-      this.userSettingsRepository.create({ id: user.id });
+      (await user.settings) || UserSettingsEntity.create({ id: user.id });
 
     for (const key of _.keys(settings)) {
       if (!_.isUndefined(settings[key])) {
@@ -301,10 +298,12 @@ export class UserService {
       }
     }
 
-    await this.userSettingsRepository.save(userSettings);
-
     user.settings = Promise.resolve(userSettings);
-    await this.userRepository.save(user);
+
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(userSettings);
+      await transactionalEntityManager.save(user);
+    });
 
     return userSettings.toDto();
   }

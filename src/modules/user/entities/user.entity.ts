@@ -1,11 +1,20 @@
-import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
-import { AbstractEntity } from '../../common/abstract.entity';
-import { RoleType } from '../../common/constants/role-type';
-import { UseDto } from '../../decorators/use-dto.decorator';
-import { BoolBitTransformer } from '../../value-transformers/bool-bit.transformer';
-import type { UserDtoOptions } from './dto/user.dto';
-import { UserDto } from './dto/user.dto';
+import { AbstractEntity } from '../../../common/abstract.entity';
+import { RoleType } from '../../../common/constants/role.type';
+import { UseDto } from '../../../decorators/use-dto.decorator';
+import { BoolBitTransformer } from '../../../value-transformers/bool-bit.transformer';
+import { ProjectApplicantEntity } from '../../project/entities/project-applicant.entity';
+import { ProjectMemberEntity } from '../../project/entities/project-member.entity';
+import type { UserDtoOptions } from '../dto/user.dto';
+import { UserDto } from '../dto/user.dto';
 import { UserSettingsEntity } from './user-settings.entity';
 
 @Entity({ name: 'users' })
@@ -76,4 +85,10 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @OneToOne(() => UserSettingsEntity, (settings) => settings.user)
   @JoinColumn()
   settings: Promise<UserSettingsEntity>;
+
+  @OneToMany(() => ProjectApplicantEntity, (applicant) => applicant.user)
+  prjAppliedHistories: Promise<ProjectApplicantEntity[]>;
+
+  @OneToMany(() => ProjectMemberEntity, (member) => member.user)
+  prjMemberHistories: Promise<ProjectMemberEntity[]>;
 }

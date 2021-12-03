@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { RoleType } from '../../common/constants/role-type';
+import { RoleType } from '../../common/constants/role.type';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
@@ -20,7 +20,7 @@ import { UserDto } from './dto/user.dto';
 import { UserPicDto } from './dto/user-pic.dto';
 import { UserProfileRequestDto } from './dto/user-profile-request.dto';
 import { UserSettingsDto } from './dto/user-settings.dto';
-import { UserEntity } from './user.entity';
+import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @CommonHeader()

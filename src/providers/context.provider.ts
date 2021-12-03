@@ -1,6 +1,6 @@
 import requestContext from 'request-context';
 
-import type { UserEntity } from '../modules/user/user.entity';
+import type { UserEntity } from '../modules/user/entities/user.entity';
 
 export class ContextProvider {
   private static readonly nameSpace = 'request';

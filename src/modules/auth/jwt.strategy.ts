@@ -2,11 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import type { RoleType } from '../../common/constants/role-type';
-import { TokenType } from '../../common/constants/token-type';
+import type { RoleType } from '../../common/constants/role.type';
+import { TokenType } from '../../common/constants/token.type';
 import { UserBlockedException } from '../../exceptions/user-blocked.exception';
 import { ApiConfigService } from '../../shared/services/api-config.service';
-import type { UserEntity } from '../user/user.entity';
+import type { UserEntity } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 
 @Injectable()

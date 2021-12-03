@@ -2,7 +2,7 @@ import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { UserDto } from 'modules/user/dto/user.dto';
 
-import { RoleType } from '../../common/constants/role-type';
+import { RoleType } from '../../common/constants/role.type';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';

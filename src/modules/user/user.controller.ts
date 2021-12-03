@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { RoleType } from '../../common/constants/role-type';
+import { RoleType } from '../../common/constants/role.type';
 import { PageDto } from '../../common/dto/page.dto';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
@@ -17,7 +17,7 @@ import { ResponseData } from '../../decorators/response-data.decorators';
 import { TranslationService } from '../../shared/services/translation.service';
 import { UserDto } from './dto/user.dto';
 import { UsersPageOptionsDto } from './dto/users-page-options.dto';
-import { UserEntity } from './user.entity';
+import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @CommonHeader()

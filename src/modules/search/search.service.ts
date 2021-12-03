@@ -10,8 +10,8 @@ import type { UserDto } from 'modules/user/dto/user.dto';
 import type { MemberOptionsDto } from './dto/member-options.dto';
 import { PaginatedResultDto } from './dto/paginated-result.dto';
 import type { SearchWordDto, SearchWordsDto } from './dto/searchword.dto';
-import { SearchWordRepository } from './repositories/searchword.repository';
-import { SearchWordDeletedRepository } from './repositories/searchword-deleted.repository';
+import { SearchWordEntity } from './entities/searchword.entity';
+import { SearchWordDeletedEntity } from './entities/searchword-deleted.entity';
 import { SearchWordType } from './search.enum';
 
 enum EsIndex {
@@ -44,8 +44,6 @@ export class SearchService {
   constructor(
     @InjectSentry() private readonly sentry: SentryService,
     private readonly elasticsearchService: ElasticsearchService,
-    private readonly searchWordRepository: SearchWordRepository,
-    private readonly searchWordDeletedRepository: SearchWordDeletedRepository,
   ) {}
 
   async queryAutoCompletion(
@@ -80,12 +78,12 @@ export class SearchService {
     const word = _word.toUpperCase();
 
     try {
-      const rowDeleted = await this.searchWordDeletedRepository.findOne({
+      const rowDeleted = await SearchWordDeletedEntity.findOne({
         word,
       });
 
       if (!rowDeleted) {
-        await this.searchWordDeletedRepository.insert({ word });
+        await SearchWordDeletedEntity.insert({ word });
       }
     } catch (error) {
       this.sentry.instance().captureException(error);
@@ -93,7 +91,7 @@ export class SearchService {
 
     const index = searchWordTypeToEsIndex[type];
 
-    const row = await this.searchWordRepository.findOne({
+    const row = await SearchWordEntity.findOne({
       type,
       word,
     });
@@ -107,7 +105,7 @@ export class SearchService {
       id: `${row.id}`,
     });
 
-    await this.searchWordRepository.remove(row);
+    await SearchWordEntity.remove(row);
   }
 
   async putAutoCompletion(
@@ -118,7 +116,7 @@ export class SearchService {
     const word = _word.toUpperCase();
 
     if (
-      await this.searchWordDeletedRepository.findOne({
+      await SearchWordDeletedEntity.findOne({
         word,
       })
     ) {
@@ -132,14 +130,14 @@ export class SearchService {
     const index = searchWordTypeToEsIndex[type];
 
     const row =
-      (await this.searchWordRepository.findOne({
+      (await SearchWordEntity.findOne({
         type,
         word,
-      })) || this.searchWordRepository.create({ type, word });
+      })) || SearchWordEntity.create({ type, word });
 
     row.weight = (row.weight || 0) + 1;
 
-    const inserted = await this.searchWordRepository.save(row);
+    const inserted = await SearchWordEntity.save(row);
 
     await this.elasticsearchService.update({
       id: `${inserted.id}`,

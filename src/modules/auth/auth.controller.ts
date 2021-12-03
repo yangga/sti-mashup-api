@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { RoleType } from '../../common/constants/role-type';
+import { RoleType } from '../../common/constants/role.type';
 import { CommonHeaderDto } from '../../common/dto/common-header.dto';
 import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
@@ -24,7 +24,7 @@ import { UserBlockedException } from '../../exceptions/user-blocked.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { VerificationTokenDto } from '../../shared/dto/verification-token.dto';
 import { UserDto } from '../user/dto/user.dto';
-import { UserEntity } from '../user/user.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/login-payload.dto';

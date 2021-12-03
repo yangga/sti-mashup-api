@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { TokenType } from '../../common/constants/token-type';
+import { TokenType } from '../../common/constants/token.type';
 import { EmailAlreadyUsedException } from '../../exceptions/email-already-used.exception';
 import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { UtilsProvider } from '../../providers/utils.provider';
@@ -18,7 +18,7 @@ import {
   VerificationTokenService,
 } from '../../shared/services/verification-token.service';
 import type { UserDto } from '../user/dto/user.dto';
-import type { UserEntity } from '../user/user.entity';
+import type { UserEntity } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { TokenNotFoundException } from './../../exceptions/token-not-found.exception';
 import { TokenPayloadDto } from './dto/token-payload.dto';

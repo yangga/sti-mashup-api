@@ -100,10 +100,12 @@ export class ProjectDto extends AbstractDto {
         (prev, cur) => {
           const { position, openCnt, closeCnt } = cur;
 
-          prev[position] = {
-            openCnt,
-            closeCnt,
-          };
+          if (openCnt > 0) {
+            prev[position] = {
+              openCnt,
+              closeCnt,
+            };
+          }
 
           return prev;
         },

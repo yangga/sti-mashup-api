@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role.type';
@@ -9,6 +9,7 @@ import { ResponseData } from '../../decorators/response-data.decorators';
 import { UserEntity } from '../user/entities/user.entity';
 import { ProjectDto } from './dto/project.dto';
 import { ProjectRegisterDto } from './dto/project-register.dto';
+import { ProjectUpdateDto } from './dto/project-update.dto';
 import { ProjectService } from './project.service';
 
 @CommonHeader()
@@ -44,6 +45,21 @@ export class ProjectController {
       needMembers: true,
       needPositionStatus: true,
     });
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: '',
+    description: 'Update a project',
+  })
+  @Auth([RoleType.USER])
+  @ResponseData(ProjectDto)
+  async updateProject(
+    @AuthUser() user: UserEntity,
+    @Query('id') id: number,
+    @Body() body: ProjectUpdateDto,
+  ): Promise<ProjectDto> {
+    return this.projectService.updateProject(id, body, user);
   }
 
   //   @Put(':projectId/state')

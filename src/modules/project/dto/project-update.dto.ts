@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
   IsDateString,
@@ -12,25 +12,27 @@ import {
 
 import { ToUpperCase, Trim } from '../../../decorators/transforms.decorator';
 import { NestedArray } from '../../../validators/nested-array.validator';
-import { SimpleValidate } from '../../../validators/simple.validator';
 import { ProjectPositionDto } from './project-position.dto';
 
-export class ProjectRegisterDto {
-  @ApiProperty({ type: [String] })
+export class ProjectUpdateDto {
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
   @ArrayNotEmpty()
   @ToUpperCase()
   @Trim()
-  readonly languages: string[];
+  readonly languages?: string[];
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
-  readonly title: string;
+  readonly title?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
-  readonly descriptionHtml: string;
+  readonly descriptionHtml?: string;
 
   @ApiPropertyOptional()
   @IsString()
@@ -48,11 +50,12 @@ export class ProjectRegisterDto {
   @Trim()
   readonly skills?: string[];
 
-  @ApiProperty({ type: [String] })
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
   @ArrayNotEmpty()
   @ToUpperCase()
   @Trim()
-  readonly tags: string[];
+  readonly tags?: string[];
 
   @ApiPropertyOptional({ type: Date })
   @IsDateString()
@@ -65,28 +68,11 @@ export class ProjectRegisterDto {
   @IsOptional()
   readonly period?: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @ToUpperCase()
-  @Trim()
-  @SimpleValidate({
-    validate: (value: string, obj: ProjectRegisterDto) => {
-      const l = value.toUpperCase();
-
-      return (
-        obj.positions.findIndex(
-          (pos) => pos.name.toUpperCase().localeCompare(l) === 0,
-        ) >= 0
-      );
-    },
-  })
-  readonly myPosition: string;
-
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @ArrayNotEmpty()
   @NestedArray({
     type: () => ProjectPositionDto,
   })
-  readonly positions: ProjectPositionDto[];
+  readonly positions?: ProjectPositionDto[];
 }

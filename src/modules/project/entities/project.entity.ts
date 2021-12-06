@@ -30,6 +30,10 @@ export class ProjectEntity extends AbstractEntity<
   @Column({ nullable: false })
   title: string;
 
+  // nullable: true 은 type 정의가 꼭 필요함.
+  @Column({ type: 'varchar', nullable: true })
+  avatar?: string | null;
+
   @Column({ nullable: false })
   descriptionHtml: string;
 

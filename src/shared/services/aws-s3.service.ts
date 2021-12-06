@@ -7,6 +7,7 @@ import { ApiConfigService } from './api-config.service';
 import { GeneratorService } from './generator.service';
 
 export enum S3FileCategory {
+  PROJECT_PIC = 'project-pic',
   USER_PIC = 'user-pic',
 }
 

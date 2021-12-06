@@ -36,6 +36,9 @@ export class ProjectDto extends AbstractDto {
   @IsNotEmpty()
   readonly title: string;
 
+  @ApiPropertyOptional()
+  avatar?: string;
+
   @ApiProperty()
   @IsNotEmpty()
   readonly descriptionHtml: string;
@@ -86,6 +89,7 @@ export class ProjectDto extends AbstractDto {
     this.state = entity.state;
     this.languages = entity.languages;
     this.title = entity.title;
+    this.avatar = entity.avatar ? entity.avatar : undefined;
     this.descriptionHtml = entity.descriptionHtml;
     this.teamIntroHtml = entity.teamIntroHtml;
     this.profitShare = entity.profitShare;

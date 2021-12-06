@@ -1,17 +1,33 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
 import _ from 'lodash';
-import type { UserEntity } from 'modules/user/entities/user.entity';
+import sharp from 'sharp';
 import type { FindConditions } from 'typeorm';
 import { getManager } from 'typeorm';
 
 import { ProjectMemberRoleType } from '../../common/constants/project-member-role.type';
 import { ProjectStateType } from '../../common/constants/project-state.type';
+import { FileNotImageException } from '../../exceptions/file-not-image.exception';
 import { ProjectHasPositionException } from '../../exceptions/project-has-position.exception';
 import { ProjectInvolvedToomanyException } from '../../exceptions/project-involved-toomany.exception';
+import { ProjectNotFoundException } from '../../exceptions/project-not-found.exception';
+import type { IFile } from '../../interfaces';
 import { SearchService } from '../../modules/search/search.service';
+import type { UserEntity } from '../../modules/user/entities/user.entity';
 import { ApiConfigService } from '../../shared/services/api-config.service';
+import {
+  AwsS3Service,
+  S3FileCategory,
+} from '../../shared/services/aws-s3.service';
+import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import type { ProjectDto } from './dto/project.dto';
+import { ProjectPicDto } from './dto/project-pic.dto';
 import type { ProjectPositionDto } from './dto/project-position.dto';
 import type { ProjectRegisterDto } from './dto/project-register.dto';
 import type { ProjectUpdateDto } from './dto/project-update.dto';
@@ -23,10 +39,15 @@ import { ProjectQueryService } from './project-query.service';
 
 @Injectable()
 export class ProjectService {
+  private readonly logger = new Logger(ProjectService.name);
+
   constructor(
+    @InjectSentry() private readonly sentry: SentryService,
+    private readonly awsS3Service: AwsS3Service,
     private readonly configService: ApiConfigService,
     private readonly projectQueryService: ProjectQueryService,
     private readonly searchService: SearchService,
+    private readonly validatorService: ValidatorService,
   ) {}
 
   findOne(
@@ -66,6 +87,10 @@ export class ProjectService {
     }
 
     const project = ProjectEntity.create(body);
+
+    if (!project) {
+      throw new ProjectNotFoundException();
+    }
 
     const positions = body.positions.map((pos) =>
       ProjectPositionStatusEntity.create({
@@ -225,6 +250,87 @@ export class ProjectService {
         await transactionalEntityManager.save(project);
       });
     }
+  }
+
+  async uploadProjectPic(
+    id: number,
+    file: IFile,
+    user: UserEntity,
+  ): Promise<ProjectPicDto> {
+    if (file && !this.validatorService.isImage(file.mimetype)) {
+      throw new FileNotImageException();
+    }
+
+    const [canChangeMeta, project] =
+      await this.projectQueryService.canUserChangeMeta(user.id, id);
+
+    if (!canChangeMeta) {
+      throw new ForbiddenException();
+    }
+
+    file.buffer = await sharp(file.buffer)
+      .resize(128, 128, {
+        fit: 'inside',
+      })
+      .toBuffer();
+
+    const oldAvatar = project.avatar;
+
+    if (file) {
+      project.avatar = await this.awsS3Service.upload(
+        S3FileCategory.PROJECT_PIC,
+        file,
+      );
+    }
+
+    const executeWrapper = async <T>(promise: Promise<T> | undefined) => {
+      try {
+        return promise === undefined ? undefined : await promise;
+      } catch (error) {
+        this.logger.error(error);
+        this.sentry.instance().captureException(error);
+
+        throw error;
+      }
+    };
+
+    const res = await Promise.allSettled([
+      executeWrapper(ProjectEntity.save(project)),
+      executeWrapper(
+        oldAvatar ? this.awsS3Service.delete(oldAvatar) : undefined,
+      ),
+    ]);
+
+    if (res[0].status === 'rejected') {
+      throw res[0].reason;
+    }
+
+    await this._streamToES(project.toDto());
+
+    return new ProjectPicDto(id, project.avatar);
+  }
+
+  async delProjectPic(id: number, user: UserEntity): Promise<void> {
+    const [canChangeMeta, project] =
+      await this.projectQueryService.canUserChangeMeta(user.id, id);
+
+    if (!canChangeMeta) {
+      throw new ForbiddenException();
+    }
+
+    if (!project.avatar) {
+      throw new NotFoundException();
+    }
+
+    const key = project.avatar;
+
+    // eslint-disable-next-line unicorn/no-null
+    project.avatar = null;
+    await ProjectEntity.save(project);
+
+    await this.awsS3Service.delete(key);
+
+    await this._streamToES(project.toDto());
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental

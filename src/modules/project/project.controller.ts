@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role.type';
@@ -6,8 +16,11 @@ import { AuthUser } from '../../decorators/auth-user.decorator';
 import { CommonHeader } from '../../decorators/common-header.decorator';
 import { Auth } from '../../decorators/http.decorators';
 import { ResponseData } from '../../decorators/response-data.decorators';
+import { ApiFile } from '../../decorators/swagger.schema';
+import { IFile } from '../../interfaces';
 import { UserEntity } from '../user/entities/user.entity';
 import { ProjectDto } from './dto/project.dto';
+import { ProjectPicDto } from './dto/project-pic.dto';
 import { ProjectRegisterDto } from './dto/project-register.dto';
 import { ProjectUpdateDto } from './dto/project-update.dto';
 import { ProjectService } from './project.service';
@@ -60,6 +73,28 @@ export class ProjectController {
     @Body() body: ProjectUpdateDto,
   ): Promise<ProjectDto> {
     return this.projectService.updateProject(id, body, user);
+  }
+
+  @Put(':id/pic')
+  @ResponseData(ProjectPicDto)
+  @Auth([RoleType.USER])
+  @ApiFile({ name: 'avatar' }, { isRequired: true })
+  async uploadProjectPic(
+    @AuthUser() user: UserEntity,
+    @Query('id') id: number,
+    @UploadedFile() file: IFile,
+  ): Promise<ProjectPicDto> {
+    return this.projectService.uploadProjectPic(id, file, user);
+  }
+
+  @Delete(':id/pic')
+  @ResponseData()
+  @Auth([RoleType.USER])
+  async deleteProjectPic(
+    @AuthUser() user: UserEntity,
+    @Query('id') id: number,
+  ): Promise<void> {
+    await this.projectService.delProjectPic(id, user);
   }
 
   //   @Put(':projectId/state')

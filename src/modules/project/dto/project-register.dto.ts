@@ -1,13 +1,16 @@
 /* eslint-disable max-classes-per-file */
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
+  IsDateString,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
 
+import { ToUpperCase, Trim } from '../../../decorators/transforms.decorator';
 import { NestedArray } from '../../../validators/nested-array.validator';
 import { SimpleValidate } from '../../../validators/simple.validator';
 
@@ -15,6 +18,8 @@ export class ProjectPositionDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  @ToUpperCase()
+  @Trim()
   readonly name: string;
 
   @ApiProperty()
@@ -26,6 +31,8 @@ export class ProjectPositionDto {
 export class ProjectRegisterDto {
   @ApiProperty({ type: [String] })
   @ArrayNotEmpty()
+  @ToUpperCase()
+  @Trim()
   readonly languages: string[];
 
   @ApiProperty()
@@ -38,20 +45,51 @@ export class ProjectRegisterDto {
   @IsString()
   readonly descriptionHtml: string;
 
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  readonly teamIntroHtml?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  readonly profitShare?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @ToUpperCase()
+  @Trim()
+  readonly skills?: string[];
+
   @ApiProperty({ type: [String] })
   @ArrayNotEmpty()
+  @ToUpperCase()
+  @Trim()
   readonly tags: string[];
+
+  @ApiPropertyOptional({ type: Date })
+  @IsDateString()
+  @IsOptional()
+  readonly beginAt?: Date;
+
+  @ApiPropertyOptional()
+  @Min(1)
+  @IsNumber()
+  @IsOptional()
+  readonly period?: number;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  @ToUpperCase()
+  @Trim()
   @SimpleValidate({
     validate: (value: string, obj: ProjectRegisterDto) => {
-      const l = value.toLowerCase();
+      const l = value.toUpperCase();
 
       return (
         obj.positions.findIndex(
-          (pos) => pos.name.toLowerCase().localeCompare(l) === 0,
+          (pos) => pos.name.toUpperCase().localeCompare(l) === 0,
         ) >= 0
       );
     },

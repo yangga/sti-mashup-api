@@ -90,5 +90,5 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   prjAppliedHistories: Promise<ProjectApplicantEntity[]>;
 
   @OneToMany(() => ProjectMemberEntity, (member) => member.user)
-  prjMemberHistories: Promise<ProjectMemberEntity[]>;
+  prjMember: Promise<ProjectMemberEntity[]>;
 }

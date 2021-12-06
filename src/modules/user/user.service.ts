@@ -98,7 +98,7 @@ export class UserService {
 
     const createdUser = await UserEntity.save(user);
 
-    await this._streamToES(createdUser);
+    await this._streamToES(createdUser.toDto());
 
     return createdUser;
   }
@@ -115,7 +115,7 @@ export class UserService {
     user.password = password;
     user.passwordChangedAt = new Date();
 
-    await this._streamToES(user);
+    await this._streamToES(user.toDto());
 
     return UserEntity.save(user);
   }
@@ -137,7 +137,7 @@ export class UserService {
     user.deleted = true;
     await UserEntity.save(user);
 
-    await this._streamToES(user);
+    await this._streamToES(user.toDto());
   }
 
   async getUsers(
@@ -192,7 +192,7 @@ export class UserService {
 
     if (isUpdated) {
       await UserEntity.save(user);
-      await this._streamToES(user);
+      await this._streamToES(user.toDto());
     }
 
     return user.toDto();
@@ -248,7 +248,7 @@ export class UserService {
       throw res[0].reason;
     }
 
-    await this._streamToES(user);
+    await this._streamToES(user.toDto());
 
     return new UserPicDto(id, user.avatar);
   }
@@ -274,7 +274,7 @@ export class UserService {
 
     await this.awsS3Service.delete(key);
 
-    await this._streamToES(user);
+    await this._streamToES(user.toDto());
   }
 
   async updateUserSettings(
@@ -309,7 +309,7 @@ export class UserService {
   }
 
   // TODO: 나중에 stream으로 처리. RDS에 데이터 업데이트되면 > lambda 호출 후 ES 적재로 처리하기
-  async _streamToES(doc: UserEntity): Promise<void> {
-    await this.searchService.putUser(doc.toDto());
+  async _streamToES(dto: UserDto): Promise<void> {
+    await this.searchService.putUser(dto);
   }
 }

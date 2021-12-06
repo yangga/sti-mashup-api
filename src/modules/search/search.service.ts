@@ -4,7 +4,9 @@ import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { Interval } from '@nestjs/schedule';
 import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
 import Bodybuilder from 'bodybuilder';
+import HtmlToText from 'html-to-text';
 import _ from 'lodash';
+import type { ProjectDto } from 'modules/project/dto/project.dto';
 import type { UserDto } from 'modules/user/dto/user.dto';
 
 import type { MemberOptionsDto } from './dto/member-options.dto';
@@ -303,6 +305,23 @@ export class SearchService {
       index: EsIndex.Users,
       body: {
         doc,
+        doc_as_upsert: true,
+      },
+    });
+  }
+
+  async putProject(doc: ProjectDto): Promise<void> {
+    await this.elasticsearchService.update({
+      id: `${doc.id}`,
+      index: EsIndex.Projects,
+      body: {
+        doc: {
+          ...doc,
+          description: HtmlToText.convert(doc.descriptionHtml),
+          teamIntro: doc.teamIntroHtml
+            ? HtmlToText.convert(doc.teamIntroHtml)
+            : undefined,
+        },
         doc_as_upsert: true,
       },
     });

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import _ from 'lodash';
 
 import { ProjectStateType } from '../../../common/constants/project-state.type';
@@ -33,9 +40,34 @@ export class ProjectDto extends AbstractDto {
   @IsNotEmpty()
   readonly descriptionHtml: string;
 
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  readonly teamIntroHtml?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  readonly profitShare?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  readonly skills?: string[];
+
   @ApiProperty({ type: [String] })
   @IsNotEmpty()
   readonly tags: string[];
+
+  @ApiPropertyOptional({ type: Date })
+  @IsDateString()
+  @IsOptional()
+  readonly beginAt?: Date;
+
+  @ApiPropertyOptional()
+  @Min(1)
+  @IsNumber()
+  @IsOptional()
+  readonly period?: number;
 
   @ApiPropertyOptional({ type: () => Object })
   @IsOptional()
@@ -55,7 +87,12 @@ export class ProjectDto extends AbstractDto {
     this.languages = entity.languages;
     this.title = entity.title;
     this.descriptionHtml = entity.descriptionHtml;
+    this.teamIntroHtml = entity.teamIntroHtml;
+    this.profitShare = entity.profitShare;
+    this.skills = entity.skills;
     this.tags = entity.tags;
+    this.beginAt = entity.beginAt;
+    this.period = entity.period;
 
     if (options?.positionStatus) {
       this.positionStatus = _.reduce(

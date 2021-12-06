@@ -1,8 +1,8 @@
 export enum ProjectStateType {
   OPEN = 'OPEN',
-  CLOSED = 'CLOSED',
   STARTED = 'STARTED',
   HOLD = 'HOLD',
+  CLOSED = 'CLOSED',
   DROPPED = 'DROPPED',
   FINISHED = 'FINISHED',
 }

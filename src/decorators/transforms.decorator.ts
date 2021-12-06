@@ -65,3 +65,23 @@ export function ToArray(): PropertyDecorator {
     { toClassOnly: true },
   );
 }
+
+export function ToUpperCase(): PropertyDecorator {
+  return Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.map((v) => v.toUpperCase());
+    }
+
+    return value.toUpperCase();
+  });
+}
+
+export function ToLowerCase(): PropertyDecorator {
+  return Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.map((v) => v.toLowerCase());
+    }
+
+    return value.toLowerCase();
+  });
+}

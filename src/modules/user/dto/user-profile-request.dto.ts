@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ArrayMaxSize, IsNotEmpty, IsOptional } from 'class-validator';
 
-import { Trim } from '../../../decorators/transforms.decorator';
+import { ToUpperCase, Trim } from '../../../decorators/transforms.decorator';
 import { IsLocaleCode } from '../../../decorators/validators.decorator';
 
 export class UserProfileRequestDto {
@@ -11,6 +11,7 @@ export class UserProfileRequestDto {
   @ArrayMaxSize(10)
   @IsOptional()
   @Trim()
+  @ToUpperCase()
   readonly languages?: string[];
 
   @ApiPropertyOptional({ type: [String] })
@@ -18,6 +19,7 @@ export class UserProfileRequestDto {
   @ArrayMaxSize(20)
   @IsOptional()
   @Trim()
+  @ToUpperCase()
   readonly positions?: string[];
 
   @ApiPropertyOptional({ type: [String] })
@@ -25,6 +27,7 @@ export class UserProfileRequestDto {
   @ArrayMaxSize(20)
   @IsOptional()
   @Trim()
+  @ToUpperCase()
   readonly interesting?: string[];
 
   @ApiPropertyOptional({ type: [String] })
@@ -32,5 +35,6 @@ export class UserProfileRequestDto {
   @ArrayMaxSize(20)
   @IsOptional()
   @Trim()
+  @ToUpperCase()
   readonly skills?: string[];
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleType } from '../../common/constants/role.type';
@@ -29,6 +29,21 @@ export class ProjectController {
     @Body() body: ProjectRegisterDto,
   ): Promise<ProjectDto> {
     return this.projectService.createProject(user, body);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: '',
+    description: 'Get a project',
+  })
+  @Auth([RoleType.USER])
+  @ResponseData(ProjectDto)
+  async getProject(@Query('id') id: number): Promise<ProjectDto> {
+    return this.projectService.getProject(id, {
+      needApplicants: true,
+      needMembers: true,
+      needPositionStatus: true,
+    });
   }
 
   //   @Put(':projectId/state')

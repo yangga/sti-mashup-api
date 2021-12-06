@@ -62,7 +62,7 @@ export class UserController {
   @Get(':id')
   @ApiOperation({
     summary: '',
-    description: 'Get users list',
+    description: 'Get an user',
   })
   @Auth([RoleType.USER])
   @ResponseData(UserDto)

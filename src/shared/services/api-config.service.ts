@@ -28,6 +28,10 @@ export class ApiConfigService {
     return this.nodeEnv === 'test';
   }
 
+  get maxInvolveProjectCount(): number {
+    return 10;
+  }
+
   get webPageUrl(): string {
     if (this.stage === 'prod') {
       return 'https://sideteam.io';

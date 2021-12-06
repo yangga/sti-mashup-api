@@ -1,4 +1,4 @@
-import { Column, Entity, Index, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, OneToMany } from 'typeorm';
 
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ProjectMemberRoleType } from '../../../common/constants/project-member-role.type';
@@ -6,6 +6,7 @@ import { UseDto } from '../../../decorators/use-dto.decorator';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ProjectMemberDto } from '../dto/project-member.dto';
 import { ProjectEntity } from './project.entity';
+import { ProjectMemberPositionEntity } from './project-member-position.entity';
 
 @Entity({ name: 'project_members' })
 @UseDto(ProjectMemberDto)
@@ -14,12 +15,8 @@ export class ProjectMemberEntity extends AbstractEntity<ProjectMemberDto> {
   @ManyToOne(() => ProjectEntity, (project) => project.members)
   project: ProjectEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.prjMemberHistories)
+  @ManyToOne(() => UserEntity, (user) => user.prjMember)
   user: UserEntity;
-
-  @Index()
-  @Column({ nullable: false })
-  position: string;
 
   @Column({
     type: 'enum',
@@ -27,4 +24,7 @@ export class ProjectMemberEntity extends AbstractEntity<ProjectMemberDto> {
     default: ProjectMemberRoleType.GUEST,
   })
   role: ProjectMemberRoleType = ProjectMemberRoleType.GUEST;
+
+  @OneToMany(() => ProjectMemberPositionEntity, (position) => position.member)
+  positions: ProjectMemberPositionEntity[];
 }

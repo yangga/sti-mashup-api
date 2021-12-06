@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ProjectStateType } from '../../../common/constants/project-state.type';
@@ -16,6 +16,7 @@ export class ProjectEntity extends AbstractEntity<
   ProjectDto,
   ProjectDtoOptions
 > {
+  @Index()
   @Column({
     type: 'enum',
     enum: ProjectStateType,
@@ -32,8 +33,28 @@ export class ProjectEntity extends AbstractEntity<
   @Column({ nullable: false })
   descriptionHtml: string;
 
+  @Column({ nullable: true })
+  teamIntroHtml: string;
+
+  @Column({ nullable: true })
+  profitShare: string;
+
+  @Column({ type: 'simple-array', nullable: true })
+  skills: string[];
+
   @Column({ type: 'simple-array' })
   tags: string[];
+
+  @Column({
+    type: 'timestamp',
+  })
+  beginAt?: Date;
+
+  @Column({
+    type: 'smallint',
+    unsigned: true,
+  })
+  period?: number;
 
   @OneToMany(() => ProjectPositionStatusEntity, (ps) => ps.project)
   positionStatus: Promise<ProjectPositionStatusEntity[]>;

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { RoleType } from '../../../common/constants/role.type';
 import { AbstractDto } from '../../../common/dto/abstract.dto';
@@ -12,6 +12,7 @@ export class UserDto extends AbstractDto {
   username: string;
 
   @ApiPropertyOptional({ enum: RoleType })
+  @IsEnum(RoleType)
   role: RoleType;
 
   @ApiPropertyOptional()

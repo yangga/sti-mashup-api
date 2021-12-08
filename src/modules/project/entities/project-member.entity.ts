@@ -3,6 +3,7 @@ import { Column, Entity, Index, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { ProjectMemberRoleType } from '../../../common/constants/project-member-role.type';
 import { UseDto } from '../../../decorators/use-dto.decorator';
+import { BoolBitTransformer } from '../../../value-transformers/bool-bit.transformer';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ProjectMemberDto } from '../dto/project-member.dto';
 import { ProjectEntity } from './project.entity';
@@ -27,4 +28,11 @@ export class ProjectMemberEntity extends AbstractEntity<ProjectMemberDto> {
 
   @OneToMany(() => ProjectMemberPositionEntity, (position) => position.member)
   positions: ProjectMemberPositionEntity[];
+
+  @Column({
+    type: 'bit',
+    transformer: new BoolBitTransformer(),
+    nullable: true,
+  })
+  deleted?: boolean;
 }

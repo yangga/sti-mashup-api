@@ -1,3 +1,4 @@
+import { UnauthorizedException } from '@nestjs/common';
 import {
   Column,
   Entity,
@@ -10,6 +11,7 @@ import {
 import { AbstractEntity } from '../../../common/abstract.entity';
 import { RoleType } from '../../../common/constants/role.type';
 import { UseDto } from '../../../decorators/use-dto.decorator';
+import { UserBlockedException } from '../../../exceptions/user-blocked.exception';
 import { BoolBitTransformer } from '../../../value-transformers/bool-bit.transformer';
 import { ProjectApplicantEntity } from '../../project/entities/project-applicant.entity';
 import { ProjectMemberEntity } from '../../project/entities/project-member.entity';
@@ -57,16 +59,16 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   })
   level: number;
 
-  @Column({ type: 'simple-array' })
+  @Column({ type: 'simple-array', nullable: true })
   languages?: string[];
 
-  @Column({ type: 'simple-array' })
+  @Column({ type: 'simple-array', nullable: true })
   positions?: string[];
 
-  @Column({ type: 'simple-array' })
+  @Column({ type: 'simple-array', nullable: true })
   interesting?: string[];
 
-  @Column({ type: 'simple-array' })
+  @Column({ type: 'simple-array', nullable: true })
   skills?: string[];
 
   @Column({
@@ -91,4 +93,14 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
 
   @OneToMany(() => ProjectMemberEntity, (member) => member.user)
   prjMember: Promise<ProjectMemberEntity[]>;
+
+  checkActivation(): void {
+    if (this.deleted) {
+      throw new UnauthorizedException();
+    }
+
+    if (this.blockUntilAt && this.blockUntilAt.getTime() > Date.now()) {
+      throw new UserBlockedException();
+    }
+  }
 }

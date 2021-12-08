@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -12,13 +13,14 @@ import { getManager } from 'typeorm';
 
 import { ProjectMemberRoleType } from '../../common/constants/project-member-role.type';
 import { ProjectStateType } from '../../common/constants/project-state.type';
+import { DuplicatedRequestException } from '../../exceptions/duplicated-request.exception';
 import { FileNotImageException } from '../../exceptions/file-not-image.exception';
 import { ProjectHasPositionException } from '../../exceptions/project-has-position.exception';
 import { ProjectInvolvedToomanyException } from '../../exceptions/project-involved-toomany.exception';
 import { ProjectNotFoundException } from '../../exceptions/project-not-found.exception';
 import type { IFile } from '../../interfaces';
 import { SearchService } from '../../modules/search/search.service';
-import type { UserEntity } from '../../modules/user/entities/user.entity';
+import { UserEntity } from '../../modules/user/entities/user.entity';
 import { ApiConfigService } from '../../shared/services/api-config.service';
 import {
   AwsS3Service,
@@ -26,12 +28,17 @@ import {
 } from '../../shared/services/aws-s3.service';
 import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
+import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { ProjectDto } from './dto/project.dto';
+import type { ProjectMemberApplyDto } from './dto/project-member-apply.dto';
+import type { ProjectMemberApproveDto } from './dto/project-member-approve.dto';
+import type { ProjectMemberRoleDto } from './dto/project-member-role.dto';
 import { ProjectPicDto } from './dto/project-pic.dto';
 import type { ProjectPositionDto } from './dto/project-position.dto';
 import type { ProjectRegisterDto } from './dto/project-register.dto';
 import type { ProjectUpdateDto } from './dto/project-update.dto';
 import { ProjectEntity } from './entities/project.entity';
+import { ProjectApplicantEntity } from './entities/project-applicant.entity';
 import { ProjectMemberEntity } from './entities/project-member.entity';
 import { ProjectMemberPositionEntity } from './entities/project-member-position.entity';
 import { ProjectPositionStatusEntity } from './entities/project-position-status.entity';
@@ -100,7 +107,7 @@ export class ProjectService {
         closeCnt:
           pos.name
             .toLowerCase()
-            .localeCompare(body.myPosition.toLowerCase()) === 0
+            .localeCompare((body.myPosition || '').toLowerCase()) === 0
             ? 1
             : 0,
       }),
@@ -114,14 +121,22 @@ export class ProjectService {
     });
     project.members = Promise.resolve([member]);
 
-    const memberPosition = ProjectMemberPositionEntity.create({
-      member,
-      position: body.myPosition,
-    });
-    member.positions = [memberPosition];
+    const memberPosition = body.myPosition
+      ? ProjectMemberPositionEntity.create({
+          member,
+          position: body.myPosition,
+        })
+      : undefined;
+
+    if (memberPosition) {
+      member.positions = [memberPosition];
+    }
 
     await getManager().transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.save(memberPosition);
+      if (memberPosition) {
+        await transactionalEntityManager.save(memberPosition);
+      }
+
       await transactionalEntityManager.save(positions);
       await transactionalEntityManager.save(member);
       await transactionalEntityManager.save(project);
@@ -331,6 +346,308 @@ export class ProjectService {
     await this.awsS3Service.delete(key);
 
     await this._streamToES(project.toDto());
+  }
+
+  async grantMemberRole(
+    projectId: number,
+    body: ProjectMemberRoleDto,
+    user: UserEntity,
+  ): Promise<void> {
+    if (body.role === ProjectMemberRoleType.OWNER || body.userId === user.id) {
+      throw new BadRequestException();
+    }
+
+    const project = await this.projectQueryService.getProjectEntity(projectId, {
+      needMembers: true,
+    });
+
+    if (!project) {
+      throw new ProjectNotFoundException();
+    }
+
+    const members = await project.members;
+
+    if (!members) {
+      throw new UserNotFoundException();
+    }
+
+    const memberGranter = members.find((m) => m.user.id === user.id);
+    const memberTarget = members.find((m) => m.user.id === body.userId);
+
+    if (!memberGranter || !memberTarget) {
+      throw new UserNotFoundException();
+    }
+
+    if (
+      memberGranter.role !== ProjectMemberRoleType.OWNER &&
+      memberGranter.role !== ProjectMemberRoleType.ADMIN
+    ) {
+      throw new ForbiddenException();
+    }
+
+    if (memberGranter.role === memberTarget.role) {
+      throw new ForbiddenException();
+    }
+
+    memberTarget.role = body.role;
+    await memberTarget.save();
+  }
+
+  async applyMember(
+    projectId: number,
+    body: ProjectMemberApplyDto,
+    user: UserEntity,
+  ): Promise<void> {
+    const project = await this.projectQueryService.getProjectEntity(projectId, {
+      needApplicants: true,
+      needMembers: true,
+    });
+
+    if (project.state !== ProjectStateType.OPEN) {
+      throw new ForbiddenException();
+    }
+
+    const positionStatus = await project.positionStatus;
+
+    if (
+      positionStatus.findIndex(
+        (p) => p.position === body.position && p.openCnt > p.closeCnt,
+      ) < 0
+    ) {
+      throw new BadRequestException();
+    }
+
+    const members = await project.members;
+
+    if (
+      members.findIndex(
+        (m) =>
+          m.user.id === user.id &&
+          m.positions.findIndex(
+            (mp) => !mp.deleted && mp.position === body.position,
+          ) >= 0,
+      ) >= 0
+    ) {
+      throw new DuplicatedRequestException();
+    }
+
+    const applicants = await project.applicants;
+
+    let applicant = applicants.find(
+      (a) => a.user.id === user.id && a.position === body.position,
+    );
+
+    if (applicant && !applicant.deleted) {
+      throw new DuplicatedRequestException();
+    }
+
+    if (applicant) {
+      applicant.deleted = false;
+    } else {
+      applicant = ProjectApplicantEntity.create({
+        project,
+        position: body.position,
+        user,
+      });
+      applicants.push(applicant);
+    }
+
+    project.applicants = Promise.resolve(applicants);
+
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(applicant);
+      await transactionalEntityManager.save(project);
+    });
+
+    await this._streamToES(
+      project.toDto({
+        members,
+        applicants,
+      }),
+    );
+  }
+
+  async cancelApplyMember(
+    projectId: number,
+    body: ProjectMemberApplyDto,
+    user: UserEntity,
+  ): Promise<void> {
+    const project = await this.projectQueryService.getProjectEntity(projectId, {
+      needApplicants: true,
+      needMembers: true,
+    });
+
+    if (project.state !== ProjectStateType.OPEN) {
+      throw new ForbiddenException();
+    }
+
+    const applicants = await project.applicants;
+
+    const applicant = applicants.find(
+      (a) => a.user.id === user.id && a.position === body.position,
+    );
+
+    if (!applicant) {
+      throw new ForbiddenException();
+    }
+
+    applicant.deleted = true;
+
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(applicant);
+      await transactionalEntityManager.save(project);
+    });
+
+    await this._streamToES(
+      project.toDto({
+        applicants,
+      }),
+    );
+  }
+
+  async approveMember(
+    projectId: number,
+    body: ProjectMemberApproveDto,
+    user: UserEntity,
+  ): Promise<void> {
+    const [canChange, project] =
+      await this.projectQueryService.canUserChangeMeta(user.id, projectId, {
+        needPositionStatus: true,
+        needApplicants: true,
+      });
+
+    if (!canChange) {
+      throw new ForbiddenException();
+    }
+
+    const positionStatus = await project.positionStatus;
+
+    if (
+      positionStatus.findIndex(
+        (p) => p.position === body.position && p.openCnt > p.closeCnt,
+      ) < 0
+    ) {
+      throw new BadRequestException();
+    }
+
+    const applicants = await project.applicants;
+
+    if (
+      applicants.findIndex(
+        (a) =>
+          !a.deleted &&
+          a.user.id === body.userId &&
+          a.position === body.position,
+      ) < 0
+    ) {
+      throw new BadRequestException();
+    }
+
+    const members = await project.members;
+    let member = members.find((m) => m.user.id === body.userId);
+    let position = member?.positions.find(
+      (mp) => mp.position === body.position,
+    );
+
+    if (position && !position.deleted) {
+      throw new DuplicatedRequestException();
+    }
+
+    if (member) {
+      member.deleted = false;
+    } else {
+      const targetUser = await UserEntity.findOne({ id: body.userId });
+
+      if (!targetUser) {
+        throw new UserNotFoundException();
+      }
+
+      targetUser.checkActivation();
+
+      member = ProjectMemberEntity.create({
+        project,
+        user: targetUser,
+        role: ProjectMemberRoleType.MEMBER,
+      });
+      members.push(member);
+    }
+
+    project.members = Promise.resolve(members);
+
+    const positions = member.positions || [];
+
+    if (position) {
+      position.deleted = false;
+    } else {
+      position = ProjectMemberPositionEntity.create({
+        member,
+        position: body.position,
+      });
+      positions.push(position);
+    }
+
+    member.positions = positions;
+
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(position);
+      await transactionalEntityManager.save(member);
+      await transactionalEntityManager.save(project);
+    });
+
+    await this.updateProjectPositionStatus(project);
+
+    await this._streamToES(
+      project.toDto({
+        members,
+        applicants,
+      }),
+    );
+  }
+
+  async disapproveMember(
+    projectId: number,
+    body: ProjectMemberApproveDto,
+    user: UserEntity,
+  ): Promise<void> {
+    const [canChange, project] =
+      await this.projectQueryService.canUserChangeMeta(user.id, projectId, {
+        needApplicants: true,
+      });
+
+    if (!canChange) {
+      throw new ForbiddenException();
+    }
+
+    const members = await project.members;
+    const member = members.find((m) => m.user.id === body.userId);
+
+    if (!member) {
+      throw new UserNotFoundException();
+    }
+
+    const position = member.positions.find((p) => p.position === body.position);
+
+    if (!position) {
+      throw new NotFoundException();
+    }
+
+    position.deleted = true;
+
+    member.deleted = member.positions.findIndex((p) => !p.deleted) < 0;
+
+    // eslint-disable-next-line sonarjs/no-identical-functions
+    await getManager().transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.save(position);
+      await transactionalEntityManager.save(member);
+    });
+
+    await this.updateProjectPositionStatus(project);
+
+    await this._streamToES(
+      project.toDto({
+        members,
+      }),
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars-experimental

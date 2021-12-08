@@ -48,11 +48,11 @@ export class ProjectRegisterDto {
   @Trim()
   readonly skills?: string[];
 
-  @ApiProperty({ type: [String] })
-  @ArrayNotEmpty()
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
   @ToUpperCase()
   @Trim()
-  readonly tags: string[];
+  readonly tags?: string[];
 
   @ApiPropertyOptional({ type: Date })
   @IsDateString()
@@ -65,7 +65,8 @@ export class ProjectRegisterDto {
   @IsOptional()
   readonly period?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @ToUpperCase()
@@ -81,7 +82,7 @@ export class ProjectRegisterDto {
       );
     },
   })
-  readonly myPosition: string;
+  readonly myPosition?: string;
 
   @ApiProperty()
   @ArrayNotEmpty()

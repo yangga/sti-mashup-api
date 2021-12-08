@@ -12,9 +12,12 @@ export class ProjectQueryService {
   async canUserChangeMeta(
     userId: number,
     projectId: number,
+    { needPositionStatus = false, needApplicants = false } = {},
   ): Promise<[boolean, ProjectEntity]> {
     const project = await this.getProjectEntity(projectId, {
       needMembers: true,
+      needPositionStatus,
+      needApplicants,
     });
 
     if (!project) {

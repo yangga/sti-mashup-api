@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -26,6 +27,7 @@ export type ProjectDtoOptions = Partial<{
 
 export class ProjectDto extends AbstractDto {
   @ApiProperty({ enum: ProjectStateType })
+  @IsEnum(ProjectStateType)
   readonly state: ProjectStateType;
 
   @ApiProperty({ type: [String] })
@@ -57,9 +59,9 @@ export class ProjectDto extends AbstractDto {
   @IsOptional()
   readonly skills?: string[];
 
-  @ApiProperty({ type: [String] })
+  @ApiPropertyOptional({ type: [String] })
   @IsNotEmpty()
-  readonly tags: string[];
+  readonly tags?: string[];
 
   @ApiPropertyOptional({ type: Date })
   @IsDateString()
@@ -118,11 +120,15 @@ export class ProjectDto extends AbstractDto {
     }
 
     if (options?.applicants) {
-      this.applicants = options.applicants.map((o) => o.toDto());
+      this.applicants = options.applicants
+        .filter((a) => !a.deleted)
+        .map((o) => o.toDto());
     }
 
     if (options?.members) {
-      this.members = options.members.map((o) => o.toDto());
+      this.members = options.members
+        .filter((m) => !m.deleted)
+        .map((o) => o.toDto());
     }
   }
 }

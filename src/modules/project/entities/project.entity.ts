@@ -44,10 +44,10 @@ export class ProjectEntity extends AbstractEntity<
   profitShare: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  skills: string[];
+  skills?: string[];
 
-  @Column({ type: 'simple-array' })
-  tags: string[];
+  @Column({ type: 'simple-array', nullable: true })
+  tags?: string[];
 
   @Column({
     type: 'timestamp',

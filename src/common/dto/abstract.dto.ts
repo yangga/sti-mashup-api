@@ -1,20 +1,49 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 import type { AbstractEntity } from '../abstract.entity';
 
+export interface IInitOptions {
+  hideId: boolean;
+  hideCreatedAt: boolean;
+  hideUpdatedAt: boolean;
+}
+
+const defaultInitOptions: IInitOptions = {
+  hideId: false,
+  hideCreatedAt: false,
+  hideUpdatedAt: false,
+};
+
+export const hideAbstractDtoAllProperties: IInitOptions = {
+  hideId: true,
+  hideCreatedAt: true,
+  hideUpdatedAt: true,
+};
+
 export class AbstractDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   id: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   updatedAt: Date;
 
-  constructor(entity: AbstractEntity) {
-    this.id = entity.id;
-    this.createdAt = entity.createdAt;
-    this.updatedAt = entity.updatedAt;
+  constructor(
+    entity: AbstractEntity,
+    options: IInitOptions = defaultInitOptions,
+  ) {
+    if (!options.hideId) {
+      this.id = entity.id;
+    }
+
+    if (!options.hideCreatedAt) {
+      this.createdAt = entity.createdAt;
+    }
+
+    if (!options.hideUpdatedAt) {
+      this.updatedAt = entity.updatedAt;
+    }
   }
 }

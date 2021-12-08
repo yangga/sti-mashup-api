@@ -1,6 +1,7 @@
 import { Column, Entity, Index } from 'typeorm';
 
 import { AbstractEntity } from '../../../common/abstract.entity';
+import { BoolBitTransformer } from '../../../value-transformers/bool-bit.transformer';
 import { SearchWordType } from '../search.enum';
 
 @Entity({ name: 'searchwords' })
@@ -28,4 +29,11 @@ export class SearchWordEntity extends AbstractEntity {
     },
   })
   weight: number;
+
+  @Column({
+    type: 'bit',
+    transformer: new BoolBitTransformer(),
+    nullable: true,
+  })
+  deleted?: boolean;
 }

@@ -107,7 +107,9 @@ export class SearchService {
       id: `${row.id}`,
     });
 
-    await SearchWordEntity.remove(row);
+    row.deleted = true;
+
+    await SearchWordEntity.save(row);
   }
 
   async putAutoCompletion(
@@ -138,6 +140,7 @@ export class SearchService {
       })) || SearchWordEntity.create({ type, word });
 
     row.weight = (row.weight || 0) + 1;
+    row.deleted = false;
 
     const inserted = await SearchWordEntity.save(row);
 

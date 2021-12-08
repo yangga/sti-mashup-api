@@ -20,6 +20,7 @@ import { ApiFile } from '../../decorators/swagger.schema';
 import { IFile } from '../../interfaces';
 import { UserEntity } from '../user/entities/user.entity';
 import { ProjectDto } from './dto/project.dto';
+import type { ProjectMemberDto } from './dto/project-member.dto';
 import { ProjectMemberApplyDto } from './dto/project-member-apply.dto';
 import { ProjectMemberApproveDto } from './dto/project-member-approve.dto';
 import { ProjectMemberRoleDto } from './dto/project-member-role.dto';
@@ -106,6 +107,19 @@ export class ProjectController {
     @Query('id') id: number,
   ): Promise<void> {
     await this.projectService.delProjectPic(id, user);
+  }
+
+  @Get(':id/members')
+  @ApiOperation({
+    summary: '',
+    description: 'Get members of the project',
+  })
+  @Auth([RoleType.USER])
+  @ResponseData(ProjectDto)
+  async getProjectMembers(
+    @Query('id') id: number,
+  ): Promise<ProjectMemberDto[]> {
+    return this.projectService.getProjectMembers(id);
   }
 
   @Put(':id/members/role')

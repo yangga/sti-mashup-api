@@ -30,6 +30,7 @@ import { ValidatorService } from '../../shared/services/validator.service';
 import type { Optional } from '../../types';
 import { UserNotFoundException } from './../../exceptions/user-not-found.exception';
 import type { ProjectDto } from './dto/project.dto';
+import type { ProjectMemberDto } from './dto/project-member.dto';
 import type { ProjectMemberApplyDto } from './dto/project-member-apply.dto';
 import type { ProjectMemberApproveDto } from './dto/project-member-approve.dto';
 import type { ProjectMemberRoleDto } from './dto/project-member-role.dto';
@@ -346,6 +347,16 @@ export class ProjectService {
     await this.awsS3Service.delete(key);
 
     await this._streamToES(project.toDto());
+  }
+
+  async getProjectMembers(id: number): Promise<ProjectMemberDto[]> {
+    const project = await this.projectQueryService.getProjectEntity(id, {
+      needMembers: true,
+    });
+
+    const members = await project.members;
+
+    return members.filter((m) => !m.deleted).map((m) => m.toDto());
   }
 
   async grantMemberRole(

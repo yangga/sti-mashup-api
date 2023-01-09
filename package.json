@@ -127,7 +127,7 @@
     "lint-staged": "~11.1.2",
     "nodemon": "^2.0.12",
     "prettier": "^2.4.0",
-    "serverless-offline": "^8.2.0",
+    "serverless-offline": "^8.8.1",
     "serverless-plugin-log-retention": "^2.0.0",
     "serverless-plugin-optimize": "^4.2.1-rc.1",
     "serverless-plugin-typescript": "^2.1.0",
